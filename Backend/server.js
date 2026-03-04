@@ -18,10 +18,18 @@ mongoose
   .then(() => console.log("MongoDB connected successfully"))
   .catch((err) => console.error("MongoDB connection error:", err));
 
+// Import routes
+const jobRoutes = require('./routes/CompanyJobs/jobRoutes');
+const interviewSlotRoutes = require('./routes/CompanyJobs/interviewSlotRoutes');
+
 // Root route
 app.get("/", (req, res) => {
   res.json({ message: "CareerBridge API is running" });
 });
+
+// API routes
+app.use('/api/jobs', jobRoutes);
+app.use('/api/interview-slots', interviewSlotRoutes);
 
 // Start server
 app.listen(PORT, () => {

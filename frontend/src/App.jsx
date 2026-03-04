@@ -1,8 +1,10 @@
 import { useState, useEffect } from "react";
+import CompanyJobsMain from "./pages/CompanyJobsMain";
 
 function App() {
   const [apiStatus, setApiStatus] = useState("Checking...");
   const [loading, setLoading] = useState(true);
+  const [currentModule, setCurrentModule] = useState("home");
 
   useEffect(() => {
     fetch("http://localhost:5000/")
@@ -16,6 +18,11 @@ function App() {
         setLoading(false);
       });
   }, []);
+
+  // If a specific module is selected, show that module
+  if (currentModule === "companyjobs") {
+    return <CompanyJobsMain onBack={() => setCurrentModule("home")} />;
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
@@ -53,21 +60,35 @@ function App() {
 
         {/* Member Modules */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-12 max-w-4xl w-full">
-          <div className="bg-white rounded-xl shadow p-6 border-l-4 border-blue-500">
+          {/* Student Profile Module */}
+          <div className="bg-white rounded-xl shadow p-6 border-l-4 border-blue-500 cursor-not-allowed opacity-75">
             <h3 className="text-lg font-bold text-blue-600 mb-1">StudentProfile</h3>
             <p className="text-gray-500 text-sm">Member 1 — Student Account + Profile Management</p>
+            <p className="text-xs text-gray-400 mt-2">Coming Soon...</p>
           </div>
-          <div className="bg-white rounded-xl shadow p-6 border-l-4 border-indigo-500">
+          
+          {/* Company Jobs Module - CLICKABLE */}
+          <div 
+            onClick={() => setCurrentModule("companyjobs")}
+            className="bg-white rounded-xl shadow p-6 border-l-4 border-indigo-500 cursor-pointer hover:shadow-lg hover:bg-indigo-50 transition-all duration-200 transform hover:scale-105"
+          >
             <h3 className="text-lg font-bold text-indigo-600 mb-1">CompanyJobs</h3>
             <p className="text-gray-500 text-sm">Member 2 — Company Dashboard + Job Posting + Interview Slots</p>
+            <p className="text-xs text-indigo-500 mt-2 font-semibold">✨ Click to Enter →</p>
           </div>
-          <div className="bg-white rounded-xl shadow p-6 border-l-4 border-purple-500">
+          
+          {/* Job Match Module */}
+          <div className="bg-white rounded-xl shadow p-6 border-l-4 border-purple-500 cursor-not-allowed opacity-75">
             <h3 className="text-lg font-bold text-purple-600 mb-1">JobMatch</h3>
             <p className="text-gray-500 text-sm">Member 3 — Job Search + Smart Matching + CV Generator</p>
+            <p className="text-xs text-gray-400 mt-2">Coming Soon...</p>
           </div>
-          <div className="bg-white rounded-xl shadow p-6 border-l-4 border-pink-500">
+          
+          {/* Applications Module */}
+          <div className="bg-white rounded-xl shadow p-6 border-l-4 border-pink-500 cursor-not-allowed opacity-75">
             <h3 className="text-lg font-bold text-pink-600 mb-1">Applications</h3>
             <p className="text-gray-500 text-sm">Member 4 — Applications + Interview Booking + Payment</p>
+            <p className="text-xs text-gray-400 mt-2">Coming Soon...</p>
           </div>
         </div>
       </div>
