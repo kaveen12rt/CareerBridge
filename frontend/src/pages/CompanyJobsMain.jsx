@@ -1,16 +1,19 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { ArrowLeftIcon } from '@heroicons/react/24/outline';
 import CompanyJobsNavigation from '../components/CompanyJobs/CompanyJobsNavigation';
 import {
   CompanyDashboard,
   JobPostingForm,
   InterviewSlots,
+  AllInterviewSlots,
   JobManagement,
   ApplicantsList
 } from './CompanyJobs';
 
-const CompanyJobsMain = ({ onBack }) => {
+const CompanyJobsMain = () => {
   const [currentPage, setCurrentPage] = useState('dashboard');
+  const navigate = useNavigate();
 
   const renderCurrentPage = () => {
     switch (currentPage) {
@@ -22,6 +25,8 @@ const CompanyJobsMain = ({ onBack }) => {
         return <JobManagement />;
       case 'interview-slots':
         return <InterviewSlots />;
+      case 'all-slots':
+        return <AllInterviewSlots />;
       case 'applicants':
         return <ApplicantsList />;
       default:
@@ -34,11 +39,11 @@ const CompanyJobsMain = ({ onBack }) => {
       {/* Back to Home Button */}
       <div className="bg-white border-b border-gray-200 px-4 py-2">
         <button
-          onClick={onBack}
+          onClick={() => navigate('/admin')}
           className="flex items-center space-x-2 text-gray-600 hover:text-blue-600 transition-colors duration-200"
         >
           <ArrowLeftIcon className="h-5 w-5" />
-          <span className="text-sm font-medium">← Back to Home</span>
+          <span className="text-sm font-medium">← Back to Admin Home</span>
         </button>
       </div>
       

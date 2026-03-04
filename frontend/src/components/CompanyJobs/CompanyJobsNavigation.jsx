@@ -14,6 +14,7 @@ const CompanyJobsNavigation = ({ currentPage, onPageChange }) => {
     { id: 'post-job', label: 'Post Job', icon: PlusIcon },
     { id: 'manage-jobs', label: 'Manage Jobs', icon: PencilIcon },
     { id: 'interview-slots', label: 'Interview Slots', icon: ClockIcon },
+    { id: 'all-slots', label: 'All Slots', icon: ClockIcon },
     { id: 'applicants', label: 'Applicants', icon: UserGroupIcon }
   ];
 
