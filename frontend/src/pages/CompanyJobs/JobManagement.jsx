@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { PencilIcon, TrashIcon, EyeIcon, PauseIcon, PlayIcon } from '@heroicons/react/24/outline';
+import { PencilIcon, TrashIcon, EyeIcon, PauseIcon, PlayIcon, PlusIcon, XMarkIcon } from '@heroicons/react/24/outline';
 
 const JobManagement = () => {
   const [jobs, setJobs] = useState([]);
@@ -253,7 +253,7 @@ const JobManagement = () => {
         {/* Edit Job Modal */}
         {editingJob && (
           <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-            <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+            <div className="relative top-10 mx-auto p-5 border max-w-4xl shadow-lg rounded-md bg-white mb-10">
               <div className="mt-3">
                 <h3 className="text-lg font-medium text-gray-900 mb-4">Edit Job</h3>
                 <JobEditForm
@@ -281,6 +281,10 @@ const JobEditForm = ({ job, onSave, onCancel, loading }) => {
     salaryMin: job.salaryMin || '',
     salaryMax: job.salaryMax || '',
     description: job.description || '',
+    requirements: job.requirements || [''],
+    skills: job.skills || [''],
+    experience: job.experience || '',
+    deadline: job.deadline ? new Date(job.deadline).toISOString().split('T')[0] : '',
     status: job.status || 'active'
   });
 
@@ -297,59 +301,220 @@ const JobEditForm = ({ job, onSave, onCancel, loading }) => {
     }));
   };
 
+  const handleArrayChange = (index, value, field) => {
+    const newArray = [...formData[field]];
+    newArray[index] = value;
+    setFormData(prev => ({
+      ...prev,
+      [field]: newArray
+    }));
+  };
+
+  const addArrayField = (field) => {
+    setFormData(prev => ({
+      ...prev,
+      [field]: [...prev[field], '']
+    }));
+  };
+
+  const removeArrayField = (index, field) => {
+    if (formData[field].length > 1) {
+      const newArray = formData[field].filter((_, i) => i !== index);
+      setFormData(prev => ({
+        ...prev,
+        [field]: newArray
+      }));
+    }
+  };
+
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <form onSubmit={handleSubmit} className="space-y-4 max-h-[70vh] overflow-y-auto pr-2">
+      {/* Basic Information */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Job Title *</label>
+          <input
+            type="text"
+            name="title"
+            value={formData.title}
+            onChange={handleChange}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            required
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Department *</label>
+          <input
+            type="text"
+            name="department"
+            value={formData.department}
+            onChange={handleChange}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            required
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Location *</label>
+          <input
+            type="text"
+            name="location"
+            value={formData.location}
+            onChange={handleChange}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            required
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Job Type *</label>
+          <select
+            name="type"
+            value={formData.type}
+            onChange={handleChange}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            <option value="full-time">Full-time</option>
+            <option value="part-time">Part-time</option>
+            <option value="contract">Contract</option>
+            <option value="internship">Internship</option>
+          </select>
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Salary Range (Min)</label>
+          <input
+            type="number"
+            name="salaryMin"
+            value={formData.salaryMin}
+            onChange={handleChange}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            placeholder="50000"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Salary Range (Max)</label>
+          <input
+            type="number"
+            name="salaryMax"
+            value={formData.salaryMax}
+            onChange={handleChange}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            placeholder="80000"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Experience Required</label>
+          <input
+            type="text"
+            name="experience"
+            value={formData.experience}
+            onChange={handleChange}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            placeholder="e.g., 2-4 years"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Application Deadline</label>
+          <input
+            type="date"
+            name="deadline"
+            value={formData.deadline}
+            onChange={handleChange}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+        </div>
+      </div>
+
+      {/* Description */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">Job Title</label>
-        <input
-          type="text"
-          name="title"
-          value={formData.title}
+        <label className="block text-sm font-medium text-gray-700 mb-1">Job Description *</label>
+        <textarea
+          name="description"
+          required
+          rows="4"
+          value={formData.description}
           onChange={handleChange}
           className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-          required
+          placeholder="Describe the job role and responsibilities..."
         />
       </div>
 
+      {/* Requirements */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">Department</label>
-        <input
-          type="text"
-          name="department"
-          value={formData.department}
-          onChange={handleChange}
-          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-          required
-        />
+        <label className="block text-sm font-medium text-gray-700 mb-2">Requirements</label>
+        <div className="space-y-2">
+          {formData.requirements.map((req, index) => (
+            <div key={index} className="flex items-center gap-2">
+              <input
+                type="text"
+                value={req}
+                onChange={(e) => handleArrayChange(index, e.target.value, 'requirements')}
+                className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="Add a requirement..."
+              />
+              {formData.requirements.length > 1 && (
+                <button
+                  type="button"
+                  onClick={() => removeArrayField(index, 'requirements')}
+                  className="p-2 text-red-600 hover:bg-red-50 rounded-md"
+                >
+                  <XMarkIcon className="h-4 w-4" />
+                </button>
+              )}
+            </div>
+          ))}
+          <button
+            type="button"
+            onClick={() => addArrayField('requirements')}
+            className="flex items-center text-blue-600 hover:text-blue-700"
+          >
+            <PlusIcon className="h-4 w-4 mr-1" />
+            Add Requirement
+          </button>
+        </div>
       </div>
 
+      {/* Skills */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">Location</label>
-        <input
-          type="text"
-          name="location"
-          value={formData.location}
-          onChange={handleChange}
-          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-          required
-        />
+        <label className="block text-sm font-medium text-gray-700 mb-2">Required Skills</label>
+        <div className="space-y-2">
+          {formData.skills.map((skill, index) => (
+            <div key={index} className="flex items-center gap-2">
+              <input
+                type="text"
+                value={skill}
+                onChange={(e) => handleArrayChange(index, e.target.value, 'skills')}
+                className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="Add a skill..."
+              />
+              {formData.skills.length > 1 && (
+                <button
+                  type="button"
+                  onClick={() => removeArrayField(index, 'skills')}
+                  className="p-2 text-red-600 hover:bg-red-50 rounded-md"
+                >
+                  <XMarkIcon className="h-4 w-4" />
+                </button>
+              )}
+            </div>
+          ))}
+          <button
+            type="button"
+            onClick={() => addArrayField('skills')}
+            className="flex items-center text-blue-600 hover:text-blue-700"
+          >
+            <PlusIcon className="h-4 w-4 mr-1" />
+            Add Skill
+          </button>
+        </div>
       </div>
 
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">Job Type</label>
-        <select
-          name="type"
-          value={formData.type}
-          onChange={handleChange}
-          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-        >
-          <option value="full-time">Full-time</option>
-          <option value="part-time">Part-time</option>
-          <option value="contract">Contract</option>
-          <option value="internship">Internship</option>
-        </select>
-      </div>
-
+      {/* Status */}
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
         <select
@@ -364,7 +529,8 @@ const JobEditForm = ({ job, onSave, onCancel, loading }) => {
         </select>
       </div>
 
-      <div className="flex justify-end space-x-2 pt-4">
+      {/* Submit Buttons */}
+      <div className="flex justify-end space-x-2 pt-4 border-t">
         <button
           type="button"
           onClick={onCancel}

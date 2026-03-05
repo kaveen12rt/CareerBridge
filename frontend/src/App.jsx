@@ -1,7 +1,9 @@
 import { useState, useEffect } from "react";
 import { BrowserRouter as Router, Routes, Route, Link, useNavigate } from "react-router-dom";
-import CompanyJobsMain from "./pages/CompanyJobsMain";
+import CompanyJobsMain from "./pages/CompanyJobs/CompanyJobsMain";
 import { StudentHome } from "./pages/StudentProfile";
+import { Navbar } from "./components/Navigation";
+import { JobListings, JobDetails } from "./pages/CompanyJobs";
 
 // Admin Dashboard Component
 function AdminDashboard() {
@@ -100,19 +102,15 @@ function AdminDashboard() {
 // User Portal Wrapper
 function UserPortal() {
   return (
-    <div>
-      {/* User Portal Navbar */}
-      <nav className="bg-white shadow-md px-8 py-4 flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-indigo-600">CareerBridge</h1>
-        <div className="flex gap-4">
-          <Link to="/" className="text-indigo-600 font-semibold">Home</Link>
-          <span className="text-gray-600 hover:text-indigo-600 cursor-pointer">Jobs</span>
-          <span className="text-gray-600 hover:text-indigo-600 cursor-pointer">Companies</span>
-          <span className="text-gray-600 hover:text-indigo-600 cursor-pointer">My Applications</span>
-          <Link to="/admin" className="text-gray-600 hover:text-indigo-600">Admin Portal</Link>
-        </div>
-      </nav>
-      <StudentHome />
+    <div className="min-h-screen flex flex-col">
+      {/* Navigation Bar */}
+      <Navbar />
+      
+      {/* Main Content */}
+      <div className="flex-1">
+        <StudentHome />
+      </div>
+      
       {/* Footer */}
       <footer className="bg-gray-800 text-white py-6 text-center">
         <p>© 2026 CareerBridge — ITPM Group Project</p>
@@ -127,6 +125,24 @@ function App() {
       <Routes>
         {/* User Portal Routes */}
         <Route path="/" element={<UserPortal />} />
+        <Route path="/job-listings" element={
+          <div className="min-h-screen flex flex-col">
+            <Navbar />
+            <JobListings />
+            <footer className="bg-gray-800 text-white py-6 text-center">
+              <p>© 2026 CareerBridge — ITPM Group Project</p>
+            </footer>
+          </div>
+        } />
+        <Route path="/job-details/:id" element={
+          <div className="min-h-screen flex flex-col">
+            <Navbar />
+            <JobDetails />
+            <footer className="bg-gray-800 text-white py-6 text-center">
+              <p>© 2026 CareerBridge — ITPM Group Project</p>
+            </footer>
+          </div>
+        } />
         
         {/* Admin Portal Routes */}
         <Route path="/admin" element={<AdminDashboard />} />

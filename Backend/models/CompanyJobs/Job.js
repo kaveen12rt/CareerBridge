@@ -48,6 +48,10 @@ const jobSchema = new mongoose.Schema({
   deadline: {
     type: Date
   },
+  image: {
+    type: String,
+    trim: true
+  },
   status: {
     type: String,
     enum: ['active', 'paused', 'closed'],

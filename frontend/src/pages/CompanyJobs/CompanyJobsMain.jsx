@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeftIcon } from '@heroicons/react/24/outline';
-import CompanyJobsNavigation from '../components/CompanyJobs/CompanyJobsNavigation';
+import CompanyJobsNavigation from '../../components/CompanyJobs/CompanyJobsNavigation';
 import {
   CompanyDashboard,
   JobPostingForm,
@@ -9,7 +9,7 @@ import {
   AllInterviewSlots,
   JobManagement,
   ApplicantsList
-} from './CompanyJobs';
+} from './index';
 
 const CompanyJobsMain = () => {
   const [currentPage, setCurrentPage] = useState('dashboard');
