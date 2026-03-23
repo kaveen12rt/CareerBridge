@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="320" height="320" viewBox="0 0 320 320" role="img" aria-label="Sample male profile photo">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#6b8aa5"/>
+      <stop offset="100%" stop-color="#4a6680"/>
+    </linearGradient>
+    <linearGradient id="skin" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#d9a078"/>
+      <stop offset="100%" stop-color="#c48662"/>
+    </linearGradient>
+    <linearGradient id="jacket" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#7ea2d4"/>
+      <stop offset="100%" stop-color="#6488bb"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="320" height="320" fill="url(#bg)"/>
+
+  <ellipse cx="160" cy="120" rx="52" ry="58" fill="url(#skin)"/>
+  <path d="M110 118c10-30 30-48 50-48s40 18 50 48c-8-4-18-6-28-6h-44c-10 0-20 2-28 6z" fill="#1d2026"/>
+  <rect x="141" y="152" width="38" height="18" rx="8" fill="#b77959"/>
+
+  <ellipse cx="141" cy="122" rx="4" ry="4" fill="#1f2329"/>
+  <ellipse cx="179" cy="122" rx="4" ry="4" fill="#1f2329"/>
+  <path d="M141 142c5 7 12 10 19 10s14-3 19-10" fill="none" stroke="#2e2e2e" stroke-width="4" stroke-linecap="round"/>
+  <path d="M147 136c4 3 8 4 13 4s9-1 13-4" fill="none" stroke="#5f3a2a" stroke-width="2" stroke-linecap="round"/>
+
+  <path d="M73 300c8-63 44-102 87-102s79 39 87 102" fill="url(#jacket)"/>
+  <path d="M120 300l40-85 40 85" fill="#dfe8f5"/>
+  <path d="M148 300l12-62 12 62" fill="#f6f8fb"/>
+
+  <rect x="0" y="0" width="320" height="320" fill="none" stroke="rgba(255,255,255,0.08)"/>
+</svg>

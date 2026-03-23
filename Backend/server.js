@@ -21,6 +21,9 @@ mongoose
 // Import routes
 const jobRoutes = require('./routes/CompanyJobs/jobRoutes');
 const interviewSlotRoutes = require('./routes/CompanyJobs/interviewSlotRoutes');
+const jobSearchRoutes = require('./routes/JobMatch/jobSearchRoutes');
+const matchingSettingsRoutes = require('./routes/JobMatch/matchingSettingsRoutes');
+const cvRoutes = require('./routes/JobMatch/cvRoutes');
 
 // Root route
 app.get("/", (req, res) => {
@@ -30,6 +33,9 @@ app.get("/", (req, res) => {
 // API routes
 app.use('/api/jobs', jobRoutes);
 app.use('/api/interview-slots', interviewSlotRoutes);
+app.use('/api/job-match', jobSearchRoutes);
+app.use('/api/job-match', matchingSettingsRoutes);
+app.use('/api/job-match', cvRoutes);
 
 // Start server
 app.listen(PORT, () => {

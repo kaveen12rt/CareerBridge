@@ -4,6 +4,7 @@ import CompanyJobsMain from "./pages/CompanyJobs/CompanyJobsMain";
 import { StudentHome } from "./pages/StudentProfile";
 import { Navbar } from "./components/Navigation";
 import { JobListings, JobDetails } from "./pages/CompanyJobs";
+import { JobSearch, SmartMatching, CVGenerator, JobMatchMain } from "./pages/JobMatch";
 
 // Admin Dashboard Component
 function AdminDashboard() {
@@ -75,11 +76,14 @@ function AdminDashboard() {
             <p className="text-xs text-indigo-500 mt-2 font-semibold">✨ Click to Enter →</p>
           </div>
           
-          {/* Job Match Module */}
-          <div className="bg-white rounded-xl shadow p-6 border-l-4 border-purple-500 cursor-not-allowed opacity-75">
+          {/* Job Match Module - CLICKABLE */}
+          <div
+            onClick={() => navigate("/admin/jobmatch")}
+            className="bg-white rounded-xl shadow p-6 border-l-4 border-purple-500 cursor-pointer hover:shadow-lg hover:bg-purple-50 transition-all duration-200 transform hover:scale-105"
+          >
             <h3 className="text-lg font-bold text-purple-600 mb-1">JobMatch</h3>
             <p className="text-gray-500 text-sm">Member 3 — Job Search + Smart Matching + CV Generator</p>
-            <p className="text-xs text-gray-400 mt-2">Coming Soon...</p>
+            <p className="text-xs text-purple-500 mt-2 font-semibold">✨ Click to Enter →</p>
           </div>
           
           {/* Applications Module */}
@@ -143,10 +147,38 @@ function App() {
             </footer>
           </div>
         } />
+        <Route path="/jobs" element={
+          <div className="min-h-screen flex flex-col">
+            <Navbar />
+            <JobSearch />
+            <footer className="bg-gray-800 text-white py-6 text-center">
+              <p>© 2026 CareerBridge — ITPM Group Project</p>
+            </footer>
+          </div>
+        } />
+        <Route path="/smart-matching" element={
+          <div className="min-h-screen flex flex-col">
+            <Navbar />
+            <SmartMatching />
+            <footer className="bg-gray-800 text-white py-6 text-center">
+              <p>© 2026 CareerBridge — ITPM Group Project</p>
+            </footer>
+          </div>
+        } />
+        <Route path="/cv-generator" element={
+          <div className="min-h-screen flex flex-col">
+            <Navbar />
+            <CVGenerator />
+            <footer className="bg-gray-800 text-white py-6 text-center">
+              <p>© 2026 CareerBridge — ITPM Group Project</p>
+            </footer>
+          </div>
+        } />
         
         {/* Admin Portal Routes */}
         <Route path="/admin" element={<AdminDashboard />} />
         <Route path="/admin/company" element={<CompanyJobsMain />} />
+        <Route path="/admin/jobmatch" element={<JobMatchMain />} />
       </Routes>
     </Router>
   );
