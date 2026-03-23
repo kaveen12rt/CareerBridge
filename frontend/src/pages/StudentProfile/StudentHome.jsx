@@ -5,6 +5,11 @@ const StudentHome = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(false);
 
+  const formatSalary = (value) => {
+    const numericValue = Number(value);
+    return Number.isFinite(numericValue) ? numericValue.toLocaleString() : null;
+  };
+
   useEffect(() => {
     fetchJobs();
   }, []);
@@ -24,11 +29,14 @@ const StudentHome = () => {
     }
   };
 
-  const filteredJobs = jobs.filter(job =>
-    job.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    job.department.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    job.location.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredJobs = jobs.filter((job) => {
+    const normalizedSearch = searchTerm.toLowerCase();
+    return (
+      (job.title || '').toLowerCase().includes(normalizedSearch) ||
+      (job.department || '').toLowerCase().includes(normalizedSearch) ||
+      (job.location || '').toLowerCase().includes(normalizedSearch)
+    );
+  });
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -129,10 +137,27 @@ const StudentHome = () => {
                   <p className="text-gray-600 font-medium mb-2">{job.department}</p>
                   <p className="text-gray-500 mb-2">📍 {job.location}</p>
                   <p className="text-gray-700 font-semibold mb-4">
-                    💰 Rs. {job.salaryMin.toLocaleString()} - Rs. {job.salaryMax.toLocaleString()}
+                    {(() => {
+                      const minSalary = formatSalary(job.salaryMin);
+                      const maxSalary = formatSalary(job.salaryMax);
+
+                      if (minSalary && maxSalary) {
+                        return `💰 Rs. ${minSalary} - Rs. ${maxSalary}`;
+                      }
+
+                      if (minSalary) {
+                        return `💰 From Rs. ${minSalary}`;
+                      }
+
+                      if (maxSalary) {
+                        return `💰 Up to Rs. ${maxSalary}`;
+                      }
+
+                      return '💰 Salary not specified';
+                    })()}
                   </p>
                   <div className="flex flex-wrap gap-2 mb-4">
-                    {job.skills.slice(0, 3).map((skill, index) => (
+                    {(Array.isArray(job.skills) ? job.skills : []).slice(0, 3).map((skill, index) => (
                       <span key={index} className="bg-gray-100 text-gray-700 px-3 py-1 rounded-md text-sm">
                         {skill}
                       </span>

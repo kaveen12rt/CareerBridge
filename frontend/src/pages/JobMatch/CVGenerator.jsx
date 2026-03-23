@@ -173,11 +173,66 @@ const CVGenerator = () => {
   });
   const [selectedTemplate, setSelectedTemplate] = useState(null);
   const [inspectTemplateId, setInspectTemplateId] = useState(null);
+  const [formErrors, setFormErrors] = useState({});
 
   const [preview, setPreview] = useState(false);
 
+  const getFieldClassName = (fieldKey) => {
+    const hasError = Boolean(formErrors[fieldKey]);
+    return `w-full border rounded px-3 py-2 ${hasError ? 'border-red-500 focus:outline-red-500' : 'border-gray-300'}`;
+  };
+
+  const validateForm = () => {
+    const nextErrors = {};
+
+    const fullName = String(form.fullName || '').trim();
+    const role = String(form.role || '').trim();
+    const email = String(form.email || '').trim();
+    const phone = String(form.phone || '').trim();
+    const summary = String(form.summary || '').trim();
+
+    if (!fullName) {
+      nextErrors.fullName = 'Full name is required.';
+    } else if (fullName.length < 2) {
+      nextErrors.fullName = 'Full name must be at least 2 characters.';
+    }
+
+    if (!role) {
+      nextErrors.role = 'Job title / role is required.';
+    } else if (role.length < 2) {
+      nextErrors.role = 'Job title / role must be at least 2 characters.';
+    }
+
+    if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      nextErrors.email = 'Enter a valid email address.';
+    }
+
+    if (phone && !/^[+]?[-()\d\s]{7,20}$/.test(phone)) {
+      nextErrors.phone = 'Enter a valid phone number.';
+    }
+
+    if (summary.length > 600) {
+      nextErrors.summary = 'Professional summary must be 600 characters or less.';
+    }
+
+    setFormErrors(nextErrors);
+    return Object.keys(nextErrors).length === 0;
+  };
+
+  const generatePreview = () => {
+    if (validateForm()) {
+      setPreview(true);
+    }
+  };
+
   const updateField = (key, value) => {
     setForm((prev) => ({ ...prev, [key]: value }));
+    setFormErrors((prev) => {
+      if (!prev[key]) return prev;
+      const next = { ...prev };
+      delete next[key];
+      return next;
+    });
   };
 
   const useExampleDetails = (options = { openPreview: true }) => {
@@ -198,8 +253,19 @@ const CVGenerator = () => {
 
     const allowedTypes = ['image/jpeg', 'image/png'];
     if (!allowedTypes.includes(file.type)) {
+      setFormErrors((prev) => ({
+        ...prev,
+        profileImage: 'Only JPG or PNG images are allowed.'
+      }));
       return;
     }
+
+    setFormErrors((prev) => {
+      if (!prev.profileImage) return prev;
+      const next = { ...prev };
+      delete next.profileImage;
+      return next;
+    });
 
     const reader = new FileReader();
     reader.onload = () => {
@@ -516,7 +582,8 @@ const CVGenerator = () => {
       };
 
       addRightSection('ABOUT ME', form.summary);
-      addRightSection('WORK EXPERIENCE', multiItemsAsLines(form.experience || form.projects));
+      addRightSection('WORK EXPERIENCE', multiItemsAsLines(form.experience));
+      addRightSection('PROJECTS', multiItemsAsLines(form.projects));
       addRightSection('REFERENCES', multiItemsAsLines(form.references));
 
       const safeName = (form.fullName || 'cv').trim().replace(/\s+/g, '_').toLowerCase();
@@ -562,11 +629,17 @@ const CVGenerator = () => {
       }
     }
 
-    y += 24;
+    y += 20;
+    doc.setTextColor(90, 90, 90);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(12);
+    doc.text(form.role || 'Professional Title', margin, y);
+
+    y += 18;
     doc.setTextColor(90, 90, 90);
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(11);
-    const contactLine = [form.email, form.phone].filter(Boolean).join(' | ');
+    const contactLine = [form.email, form.phone, form.address].filter(Boolean).join(' | ');
     doc.text(contactLine || 'Email | Phone', margin, y);
 
     y += 24;
@@ -594,6 +667,9 @@ const CVGenerator = () => {
     addSection('Professional Summary', form.summary);
     addSection('Education', multiItemsAsLines(form.education));
     addSection('Skills', multiItemsAsLines(form.skills));
+    addSection('Work Experience', multiItemsAsLines(form.experience));
+    addSection('Languages', multiItemsAsLines(form.languages));
+    addSection('References', multiItemsAsLines(form.references));
     addSection('Projects', multiItemsAsLines(form.projects));
 
     const safeName = (form.fullName || 'cv').trim().replace(/\s+/g, '_').toLowerCase();
@@ -939,11 +1015,13 @@ const CVGenerator = () => {
 
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-1">Full Name</label>
-                <input type="text" value={form.fullName} onChange={(e) => updateField('fullName', e.target.value)} placeholder="Enter full name" className="w-full border border-gray-300 rounded px-3 py-2" />
+                <input type="text" value={form.fullName} onChange={(e) => updateField('fullName', e.target.value)} placeholder="Enter full name" className={getFieldClassName('fullName')} />
+                {formErrors.fullName ? <p className="text-xs text-red-600 mt-1">{formErrors.fullName}</p> : null}
               </div>
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-1">Job Title / Role</label>
-                <input type="text" value={form.role} onChange={(e) => updateField('role', e.target.value)} placeholder="Enter job title" className="w-full border border-gray-300 rounded px-3 py-2" />
+                <input type="text" value={form.role} onChange={(e) => updateField('role', e.target.value)} placeholder="Enter job title" className={getFieldClassName('role')} />
+                {formErrors.role ? <p className="text-xs text-red-600 mt-1">{formErrors.role}</p> : null}
               </div>
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-1">Profile Picture (JPG or PNG)</label>
@@ -951,16 +1029,19 @@ const CVGenerator = () => {
                   type="file"
                   accept="image/png, image/jpeg"
                   onChange={handleImageUpload}
-                  className="w-full border border-gray-300 rounded px-3 py-2 bg-white"
+                  className={getFieldClassName('profileImage') + ' bg-white'}
                 />
+                {formErrors.profileImage ? <p className="text-xs text-red-600 mt-1">{formErrors.profileImage}</p> : null}
               </div>
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-1">Email</label>
-                <input type="email" value={form.email} onChange={(e) => updateField('email', e.target.value)} placeholder="Enter email" className="w-full border border-gray-300 rounded px-3 py-2" />
+                <input type="email" value={form.email} onChange={(e) => updateField('email', e.target.value)} placeholder="Enter email" className={getFieldClassName('email')} />
+                {formErrors.email ? <p className="text-xs text-red-600 mt-1">{formErrors.email}</p> : null}
               </div>
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-1">Phone</label>
-                <input type="text" value={form.phone} onChange={(e) => updateField('phone', e.target.value)} placeholder="Enter phone number" className="w-full border border-gray-300 rounded px-3 py-2" />
+                <input type="text" value={form.phone} onChange={(e) => updateField('phone', e.target.value)} placeholder="Enter phone number" className={getFieldClassName('phone')} />
+                {formErrors.phone ? <p className="text-xs text-red-600 mt-1">{formErrors.phone}</p> : null}
               </div>
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-1">Address</label>
@@ -968,7 +1049,12 @@ const CVGenerator = () => {
               </div>
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-1">Professional Summary</label>
-                <textarea rows={3} value={form.summary} onChange={(e) => updateField('summary', e.target.value)} placeholder="Write a short summary" className="w-full border border-gray-300 rounded px-3 py-2" />
+                <textarea rows={3} value={form.summary} onChange={(e) => updateField('summary', e.target.value)} placeholder="Write a short summary" className={getFieldClassName('summary')} />
+                <div className="flex items-center justify-between mt-1">
+                  <p className="text-xs text-gray-500">Max 600 characters</p>
+                  <p className="text-xs text-gray-500">{String(form.summary || '').length}/600</p>
+                </div>
+                {formErrors.summary ? <p className="text-xs text-red-600 mt-1">{formErrors.summary}</p> : null}
               </div>
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-1">Education</label>
@@ -998,7 +1084,7 @@ const CVGenerator = () => {
               <div className="flex flex-wrap gap-3">
                 <button
                   type="button"
-                  onClick={() => setPreview(true)}
+                  onClick={generatePreview}
                   className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700"
                 >
                   Generate CV Preview
@@ -1088,12 +1174,23 @@ const CVGenerator = () => {
 
                           <div>
                             <h4 className="font-semibold text-xl text-zinc-800 border-b border-zinc-400 pb-1 mb-2">Work Experience</h4>
-                            {shouldUsePointForm(form.experience || form.projects) ? (
+                            {shouldUsePointForm(form.experience) ? (
                               <ul className="text-sm text-zinc-700 list-disc pl-5 space-y-1">
-                                {parseMultiItems(form.experience || form.projects).map((item) => <li key={item}>{item}</li>)}
+                                {parseMultiItems(form.experience).map((item) => <li key={item}>{item}</li>)}
                               </ul>
                             ) : (
-                              <p className="text-sm text-zinc-700 whitespace-pre-wrap">{previewLines(form.experience || form.projects)}</p>
+                              <p className="text-sm text-zinc-700 whitespace-pre-wrap">{previewLines(form.experience)}</p>
+                            )}
+                          </div>
+
+                          <div>
+                            <h4 className="font-semibold text-xl text-zinc-800 border-b border-zinc-400 pb-1 mb-2">Projects</h4>
+                            {shouldUsePointForm(form.projects) ? (
+                              <ul className="text-sm text-zinc-700 list-disc pl-5 space-y-1">
+                                {parseMultiItems(form.projects).map((item) => <li key={item}>{item}</li>)}
+                              </ul>
+                            ) : (
+                              <p className="text-sm text-zinc-700 whitespace-pre-wrap">{previewLines(form.projects)}</p>
                             )}
                           </div>
 
@@ -1116,7 +1213,9 @@ const CVGenerator = () => {
                     <div className="flex items-start justify-between gap-3">
                       <div>
                         <h3 className={`text-xl font-bold ${templateClasses.name}`}>{form.fullName || 'Your Name'}</h3>
+                        <p className={`text-sm font-medium ${templateClasses.sub || 'text-gray-600'}`}>{form.role || 'Professional Title'}</p>
                         <p className={`text-sm ${templateClasses.sub || 'text-gray-600'}`}>{form.email} {form.phone ? `• ${form.phone}` : ''}</p>
+                        {form.address ? <p className={`text-sm ${templateClasses.sub || 'text-gray-600'} whitespace-pre-wrap`}>{form.address}</p> : null}
                       </div>
                       {form.profileImage ? (
                         <img src={form.profileImage} alt="Profile" className="w-16 h-16 rounded-full object-cover border border-gray-300" />
@@ -1147,6 +1246,39 @@ const CVGenerator = () => {
                         </ul>
                       ) : (
                         <p className={`${templateClasses.body || 'text-gray-700'} whitespace-pre-wrap`}>{previewLines(form.skills)}</p>
+                      )}
+                    </div>
+
+                    <div>
+                      <h4 className={`font-semibold pb-1 mb-1 ${templateClasses.heading}`}>Work Experience</h4>
+                      {shouldUsePointForm(form.experience) ? (
+                        <ul className={`${templateClasses.body || 'text-gray-700'} list-disc pl-5 space-y-1`}>
+                          {parseMultiItems(form.experience).map((item) => <li key={item}>{item}</li>)}
+                        </ul>
+                      ) : (
+                        <p className={`${templateClasses.body || 'text-gray-700'} whitespace-pre-wrap`}>{previewLines(form.experience)}</p>
+                      )}
+                    </div>
+
+                    <div>
+                      <h4 className={`font-semibold pb-1 mb-1 ${templateClasses.heading}`}>Languages</h4>
+                      {shouldUsePointForm(form.languages) ? (
+                        <ul className={`${templateClasses.body || 'text-gray-700'} list-disc pl-5 space-y-1`}>
+                          {parseMultiItems(form.languages).map((item) => <li key={item}>{item}</li>)}
+                        </ul>
+                      ) : (
+                        <p className={`${templateClasses.body || 'text-gray-700'} whitespace-pre-wrap`}>{previewLines(form.languages)}</p>
+                      )}
+                    </div>
+
+                    <div>
+                      <h4 className={`font-semibold pb-1 mb-1 ${templateClasses.heading}`}>References</h4>
+                      {shouldUsePointForm(form.references) ? (
+                        <ul className={`${templateClasses.body || 'text-gray-700'} list-disc pl-5 space-y-1`}>
+                          {parseMultiItems(form.references).map((item) => <li key={item}>{item}</li>)}
+                        </ul>
+                      ) : (
+                        <p className={`${templateClasses.body || 'text-gray-700'} whitespace-pre-wrap`}>{previewLines(form.references)}</p>
                       )}
                     </div>
 
