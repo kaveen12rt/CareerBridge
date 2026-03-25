@@ -1,0 +1,110 @@
+const MatchSettings = require('../../models/JobMatch/MatchSettings');
+const Job = require('../../models/CompanyJobs/Job');
+
+const normalize = (value) => String(value || '').trim().toLowerCase();
+
+const calculateMatchScore = (job, settings) => {
+  const jobSkills = (job.skills || []).map(normalize);
+  const preferredSkills = (settings.preferredSkills || []).map(normalize);
+
+  const skillScore =
+    preferredSkills.length === 0
+      ? 0
+      : (preferredSkills.filter((skill) => jobSkills.includes(skill)).length / preferredSkills.length) * 50;
+
+  const locationScore = (settings.preferredLocations || [])
+    .map(normalize)
+    .some((location) => normalize(job.location).includes(location))
+    ? 30
+    : 0;
+
+  const typeScore = (settings.preferredJobTypes || [])
+    .map(normalize)
+    .includes(normalize(job.type))
+    ? 20
+    : 0;
+
+  return Math.round(skillScore + locationScore + typeScore);
+};
+
+const getSettings = async (req, res) => {
+  try {
+    const { studentId } = req.params;
+    const settings = await MatchSettings.findOne({ studentId });
+
+    if (!settings) {
+      return res.status(404).json({ message: 'Match settings not found' });
+    }
+
+    res.json(settings);
+  } catch (error) {
+    res.status(500).json({ message: 'Error fetching match settings', error: error.message });
+  }
+};
+
+const upsertSettings = async (req, res) => {
+  try {
+    const { studentId } = req.params;
+
+    const payload = {
+      preferredLocations: req.body.preferredLocations || [],
+      preferredJobTypes: req.body.preferredJobTypes || [],
+      preferredSkills: req.body.preferredSkills || [],
+      minimumMatchScore: req.body.minimumMatchScore ?? 50,
+      preferredSalaryMin: req.body.preferredSalaryMin ?? 0
+    };
+
+    const settings = await MatchSettings.findOneAndUpdate(
+      { studentId },
+      { studentId, ...payload },
+      { new: true, upsert: true, runValidators: true }
+    );
+
+    res.json(settings);
+  } catch (error) {
+    res.status(500).json({ message: 'Error saving match settings', error: error.message });
+  }
+};
+
+const clearSettings = async (req, res) => {
+  try {
+    const { studentId } = req.params;
+    await MatchSettings.findOneAndDelete({ studentId });
+    res.json({ message: 'Match settings cleared' });
+  } catch (error) {
+    res.status(500).json({ message: 'Error clearing match settings', error: error.message });
+  }
+};
+
+const previewMatches = async (req, res) => {
+  try {
+    const { studentId } = req.params;
+    const settings = await MatchSettings.findOne({ studentId });
+
+    if (!settings) {
+      return res.status(404).json({ message: 'Match settings not found' });
+    }
+
+    const jobs = await Job.find({ status: 'active' }).sort({ createdAt: -1 });
+
+    const ranked = jobs
+      .map((job) => ({ ...job.toObject(), matchScore: calculateMatchScore(job, settings) }))
+      .filter((job) => job.matchScore >= settings.minimumMatchScore)
+      .sort((a, b) => b.matchScore - a.matchScore);
+
+    res.json({
+      settings,
+      total: ranked.length,
+      jobs: ranked
+    });
+  } catch (error) {
+    res.status(500).json({ message: 'Error generating match preview', error: error.message });
+  }
+};
+
+module.exports = {
+  getSettings,
+  upsertSettings,
+  clearSettings,
+  previewMatches
+};
