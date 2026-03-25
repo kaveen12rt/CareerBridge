@@ -1,3 +1,1 @@
-import StudentHome from './StudentHome';
-
-export { StudentHome };
+export { default } from "./StudentHome";
