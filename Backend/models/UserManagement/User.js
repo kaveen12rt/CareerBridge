@@ -36,8 +36,9 @@ const userSchema = new mongoose.Schema(
     },
     role: {
       type: String,
-      enum: ["student", "company", "admin"], // <-- added "admin"
+      enum: ["student", "company", "admin"],
       required: [true, "Role is required"],
+      default: "student",
     },
     isEmailVerified: {
       type: Boolean,
@@ -62,14 +63,17 @@ const userSchema = new mongoose.Schema(
     emailVerificationExpires: Date,
     resetPasswordToken: String,
     resetPasswordExpires: Date,
+
     studentProfile: {
       university: String,
       major: String,
       graduationYear: Number,
       skills: [String],
+      certifications: [String],
       resume: String,
       bio: String,
     },
+
     companyProfile: {
       companyName: String,
       industry: String,

@@ -14,15 +14,17 @@ import {
   deleteAccount,
   getAllUsers,
   toggleUserStatus,
-} from "../controllers/authController.js";
+  deleteOwnProfileData,
+  adminUpdateUserProfile,
+  adminDeleteUserProfile,
+} from "../../controllers/UserManagement/authController.js";
+
 import {
   authenticate,
   requireEmailVerification,
-  studentOnly,
-  companyOnly,
+  adminOnly,
   rateLimiter,
-  adminOnly, // <-- import adminOnly
-} from "../middlewares/authMiddleware.js";
+} from "../../middlewares/authMiddleware.js";
 
 const router = express.Router();
 
@@ -40,41 +42,28 @@ router.post("/reset-password/:token", resetPassword);
 router.get("/check-auth", authenticate, checkAuth);
 router.get("/profile", authenticate, getProfile);
 router.put("/profile", authenticate, updateProfile);
+router.delete("/profile-details", authenticate, deleteOwnProfileData);
 router.put("/change-password", authenticate, changePassword);
 router.post("/logout", authenticate, logout);
 router.delete("/account", authenticate, deleteAccount);
 
-// ROLE-SPECIFIC ROUTES
-router.get(
-  "/student/dashboard",
-  authenticate,
-  requireEmailVerification,
-  studentOnly,
-  (req, res) => {
-    res.json({
-      success: true,
-      message: "Student dashboard",
-      data: { role: "student", userId: req.user.id },
-    });
-  }
-);
-
-router.get(
-  "/company/dashboard",
-  authenticate,
-  requireEmailVerification,
-  companyOnly,
-  (req, res) => {
-    res.json({
-      success: true,
-      message: "Company dashboard",
-      data: { role: "company", userId: req.user.id },
-    });
-  }
-);
-
 // ADMIN ROUTES
 router.get("/users", authenticate, adminOnly, getAllUsers);
+
+router.put(
+  "/users/:userId/profile",
+  authenticate,
+  adminOnly,
+  adminUpdateUserProfile
+);
+
+router.delete(
+  "/users/:userId/profile",
+  authenticate,
+  adminOnly,
+  adminDeleteUserProfile
+);
+
 router.patch(
   "/users/:userId/toggle-status",
   authenticate,
@@ -82,7 +71,6 @@ router.patch(
   toggleUserStatus
 );
 
-// Optional: Admin dashboard test route
 router.get(
   "/admin/dashboard",
   authenticate,

@@ -1,5 +1,5 @@
 import jwt from "jsonwebtoken";
-import User from "../models/User.js";
+import User from "../models/UserManagement/User.js";
 
 export const authenticate = async (req, res, next) => {
   try {
@@ -23,6 +23,25 @@ export const authenticate = async (req, res, next) => {
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
+    // ==================== ENV ADMIN TOKEN ====================
+    if (
+      decoded.isEnvAdmin &&
+      decoded.role === "admin" &&
+      decoded.email === process.env.ADMIN_EMAIL
+    ) {
+      req.user = {
+        id: decoded.userId,
+        email: decoded.email,
+        role: "admin",
+        firstName: "Admin",
+        lastName: "",
+        isEmailVerified: true,
+      };
+
+      return next();
+    }
+
+    // ==================== NORMAL DATABASE USER TOKEN ====================
     const user = await User.findById(decoded.userId);
     if (!user) {
       return res.status(401).json({
@@ -127,6 +146,23 @@ export const optionalAuth = async (req, res, next) => {
     }
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+    if (
+      decoded.isEnvAdmin &&
+      decoded.role === "admin" &&
+      decoded.email === process.env.ADMIN_EMAIL
+    ) {
+      req.user = {
+        id: decoded.userId,
+        email: decoded.email,
+        role: "admin",
+        firstName: "Admin",
+        lastName: "",
+        isEmailVerified: true,
+      };
+      return next();
+    }
+
     const user = await User.findById(decoded.userId);
 
     if (user && user.isActive) {
@@ -146,15 +182,12 @@ export const optionalAuth = async (req, res, next) => {
   }
 };
 
-// ROLE HELPERS
+// Compatibility exports
+export const userOnly = authorize("student", "company", "user");
 export const studentOnly = authorize("student");
 export const companyOnly = authorize("company");
-export const studentOrCompany = authorize("student", "company");
-
-// Admin-based access
 export const adminOnly = authorize("admin");
-export const adminOrCompany = authorize("admin", "company");
-export const adminOrStudent = authorize("admin", "student");
+export const userOrAdmin = authorize("student", "company", "user", "admin");
 
 const requestCounts = new Map();
 

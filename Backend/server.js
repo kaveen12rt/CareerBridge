@@ -3,7 +3,10 @@ import mongoose from "mongoose";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import dotenv from "dotenv";
-import authRoutes from "./routes/authRoutes.js";
+import authRoutes from "./routes/UserManagement/authRoutes.js";
+import feedbackRoutes from "./routes/feedbackRoutes.js";
+import chatbotRoutes from "./routes/chatbotRoutes.js";
+import contactRoutes from "./routes/contactRoutes.js";
 
 // Load environment variables
 dotenv.config();
@@ -42,6 +45,9 @@ app.get("/", (req, res) => {
 });
 
 app.use("/api/auth", authRoutes);
+app.use("/api/feedback", feedbackRoutes);
+app.use("/api/chatbot", chatbotRoutes);
+app.use("/api/contact", contactRoutes);
 
 // 404 HANDLER
 app.use((req, res) => {

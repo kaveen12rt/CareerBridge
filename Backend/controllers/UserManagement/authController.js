@@ -1,12 +1,12 @@
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import nodemailer from "nodemailer";
-import User from "../models/User.js";
+import User from "../../models/UserManagement/User.js";
 import {
   getVerificationEmailTemplate,
   getPasswordResetEmailTemplate,
   getWelcomeEmailTemplate,
-} from "../utils/emailTemplates.js";
+} from "../../utils/emailTemplates.js";
 
 // ==================== EMAIL CONFIGURATION ====================
 const createTransporter = () => {
@@ -21,7 +21,7 @@ const createTransporter = () => {
     },
   });
 
-  transporter.verify((error, success) => {
+  transporter.verify((error) => {
     if (error) {
       console.error("❌ Email transporter error:", error.message);
     } else {
@@ -32,7 +32,6 @@ const createTransporter = () => {
   return transporter;
 };
 
-// Send email helper
 const sendEmail = async (to, template) => {
   try {
     const transporter = createTransporter();
@@ -56,14 +55,12 @@ const sendEmail = async (to, template) => {
   }
 };
 
-// Generate JWT token
-const generateToken = (userId) => {
-  return jwt.sign({ userId }, process.env.JWT_SECRET, {
+const generateToken = (payload) => {
+  return jwt.sign(payload, process.env.JWT_SECRET, {
     expiresIn: process.env.JWT_EXPIRES_IN || "7d",
   });
 };
 
-// Set cookie helper
 const setCookie = (res, token) => {
   res.cookie("token", token, {
     httpOnly: true,
@@ -93,7 +90,8 @@ export const register = async (req, res) => {
     }
 
     const passwordRegex =
-      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*?_+\-])[A-Za-z\d!@#$%^&*?_+\-]{8,}$/;
+
     if (!passwordRegex.test(password)) {
       return res.status(400).json({
         success: false,
@@ -102,7 +100,9 @@ export const register = async (req, res) => {
       });
     }
 
-    const existingUser = await User.findOne({ email });
+    const normalizedEmail = email.trim().toLowerCase();
+
+    const existingUser = await User.findOne({ email: normalizedEmail });
     if (existingUser) {
       return res.status(400).json({
         success: false,
@@ -115,7 +115,7 @@ export const register = async (req, res) => {
     const user = new User({
       firstName,
       lastName,
-      email,
+      email: normalizedEmail,
       password: hashedPassword,
       role,
     });
@@ -125,7 +125,7 @@ export const register = async (req, res) => {
 
     const verificationUrl = `${process.env.FRONTEND_URL}/verify-email/${verificationToken}`;
     const emailTemplate = getVerificationEmailTemplate(user, verificationUrl);
-    await sendEmail(email, emailTemplate);
+    await sendEmail(normalizedEmail, emailTemplate);
 
     res.status(201).json({
       success: true,
@@ -164,7 +164,43 @@ export const login = async (req, res) => {
       });
     }
 
-    const user = await User.findByEmailWithPassword(email);
+    const normalizedEmail = email.trim().toLowerCase();
+
+    // ==================== ENV ADMIN LOGIN ====================
+    if (
+      normalizedEmail === process.env.ADMIN_EMAIL?.trim().toLowerCase() &&
+      password === process.env.ADMIN_PASSWORD
+    ) {
+      const token = generateToken({
+        userId: "env-admin",
+        email: process.env.ADMIN_EMAIL,
+        role: "admin",
+        isEnvAdmin: true,
+      });
+
+      setCookie(res, token);
+
+      return res.status(200).json({
+        success: true,
+        message: "Welcome back, Admin!",
+        redirectUrl: "/admin",
+        data: {
+          token,
+          user: {
+            id: "env-admin",
+            firstName: "Admin",
+            lastName: "",
+            email: process.env.ADMIN_EMAIL,
+            role: "admin",
+            isEmailVerified: true,
+            profileCompleted: true,
+          },
+        },
+      });
+    }
+
+    // ==================== NORMAL DATABASE USER LOGIN ====================
+    const user = await User.findByEmailWithPassword(normalizedEmail);
     if (!user) {
       return res.status(401).json({
         success: false,
@@ -190,17 +226,25 @@ export const login = async (req, res) => {
     user.lastLogin = new Date();
     await user.save();
 
-    const token = generateToken(user._id);
+    const token = generateToken({
+      userId: user._id,
+      email: user.email,
+      role: user.role,
+    });
+
     setCookie(res, token);
 
-    let redirectUrl = "/dashboard";
-    let message = "Login successful";
+    let redirectUrl = "/";
+    let message = "Welcome back!";
 
-    if (user.role === "student") {
-      redirectUrl = "/student/dashboard";
+    if (user.role === "admin") {
+      redirectUrl = "/admin";
+      message = "Welcome back, Admin!";
+    } else if (user.role === "student") {
+      redirectUrl = "/";
       message = "Welcome back, Student!";
     } else if (user.role === "company") {
-      redirectUrl = "/company/dashboard";
+      redirectUrl = "/";
       message = "Welcome back, Company!";
     }
 
@@ -292,7 +336,9 @@ export const resendVerificationEmail = async (req, res) => {
       });
     }
 
-    const user = await User.findOne({ email });
+    const normalizedEmail = email.trim().toLowerCase();
+    const user = await User.findOne({ email: normalizedEmail });
+
     if (!user) {
       return res.status(404).json({
         success: false,
@@ -312,7 +358,7 @@ export const resendVerificationEmail = async (req, res) => {
 
     const verificationUrl = `${process.env.FRONTEND_URL}/verify-email/${verificationToken}`;
     const emailTemplate = getVerificationEmailTemplate(user, verificationUrl);
-    const emailSent = await sendEmail(email, emailTemplate);
+    const emailSent = await sendEmail(normalizedEmail, emailTemplate);
 
     if (!emailSent) {
       return res.status(500).json({
@@ -347,7 +393,9 @@ export const forgotPassword = async (req, res) => {
       });
     }
 
-    const user = await User.findOne({ email });
+    const normalizedEmail = email.trim().toLowerCase();
+    const user = await User.findOne({ email: normalizedEmail });
+
     if (!user) {
       return res.status(200).json({
         success: true,
@@ -360,7 +408,7 @@ export const forgotPassword = async (req, res) => {
 
     const resetUrl = `${process.env.FRONTEND_URL}/reset-password/${resetToken}`;
     const emailTemplate = getPasswordResetEmailTemplate(user, resetUrl);
-    const emailSent = await sendEmail(email, emailTemplate);
+    const emailSent = await sendEmail(normalizedEmail, emailTemplate);
 
     if (!emailSent) {
       user.resetPasswordToken = undefined;
@@ -401,7 +449,8 @@ export const resetPassword = async (req, res) => {
     }
 
     const passwordRegex =
-      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*?_+\-])[A-Za-z\d!@#$%^&*?_+\-]{8,}$/;
+
     if (!passwordRegex.test(password)) {
       return res.status(400).json({
         success: false,
@@ -441,6 +490,27 @@ export const resetPassword = async (req, res) => {
 // ==================== GET PROFILE ====================
 export const getProfile = async (req, res) => {
   try {
+    if (req.user.id === "env-admin") {
+      return res.status(200).json({
+        success: true,
+        data: {
+          user: {
+            id: "env-admin",
+            firstName: "Admin",
+            lastName: "",
+            fullName: "Admin",
+            email: process.env.ADMIN_EMAIL,
+            role: "admin",
+            isEmailVerified: true,
+            profileCompleted: true,
+            profileImage: "",
+            lastLogin: null,
+            createdAt: null,
+          },
+        },
+      });
+    }
+
     const user = await User.findById(req.user.id);
     if (!user) {
       return res.status(404).json({
@@ -486,6 +556,13 @@ export const getProfile = async (req, res) => {
 // ==================== UPDATE PROFILE ====================
 export const updateProfile = async (req, res) => {
   try {
+    if (req.user.id === "env-admin") {
+      return res.status(400).json({
+        success: false,
+        message: "Env admin profile cannot be updated from this route.",
+      });
+    }
+
     const user = await User.findById(req.user.id);
     if (!user) {
       return res.status(404).json({
@@ -500,15 +577,18 @@ export const updateProfile = async (req, res) => {
     if (lastName) user.lastName = lastName;
     if (profileImage) user.profileImage = profileImage;
 
-    if (email && email !== user.email) {
-      const existingUser = await User.findOne({ email });
+    if (email && email.trim().toLowerCase() !== user.email) {
+      const normalizedEmail = email.trim().toLowerCase();
+      const existingUser = await User.findOne({ email: normalizedEmail });
+
       if (existingUser && existingUser._id.toString() !== req.user.id) {
         return res.status(400).json({
           success: false,
           message: "Email already in use",
         });
       }
-      user.email = email;
+
+      user.email = normalizedEmail;
       user.isEmailVerified = false;
 
       const verificationToken = user.generateEmailVerificationToken();
@@ -517,7 +597,7 @@ export const updateProfile = async (req, res) => {
         user,
         verificationUrl
       );
-      await sendEmail(email, emailTemplate);
+      await sendEmail(normalizedEmail, emailTemplate);
     }
 
     if (user.role === "student" && req.body.studentProfile) {
@@ -586,6 +666,13 @@ export const updateProfile = async (req, res) => {
 // ==================== CHANGE PASSWORD ====================
 export const changePassword = async (req, res) => {
   try {
+    if (req.user.id === "env-admin") {
+      return res.status(400).json({
+        success: false,
+        message: "Env admin password cannot be changed from this route.",
+      });
+    }
+
     const { currentPassword, newPassword } = req.body;
 
     if (!currentPassword || !newPassword) {
@@ -596,7 +683,8 @@ export const changePassword = async (req, res) => {
     }
 
     const passwordRegex =
-      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*?_+\-])[A-Za-z\d!@#$%^&*?_+\-]{8,}$/;
+
     if (!passwordRegex.test(newPassword)) {
       return res.status(400).json({
         success: false,
@@ -617,6 +705,7 @@ export const changePassword = async (req, res) => {
       currentPassword,
       user.password
     );
+
     if (!isPasswordValid) {
       return res.status(401).json({
         success: false,
@@ -644,6 +733,23 @@ export const changePassword = async (req, res) => {
 // ==================== CHECK AUTH ====================
 export const checkAuth = async (req, res) => {
   try {
+    if (req.user.id === "env-admin") {
+      return res.status(200).json({
+        success: true,
+        data: {
+          user: {
+            id: "env-admin",
+            firstName: "Admin",
+            lastName: "",
+            email: process.env.ADMIN_EMAIL,
+            role: "admin",
+            isEmailVerified: true,
+            profileCompleted: true,
+          },
+        },
+      });
+    }
+
     const user = await User.findById(req.user.id);
     if (!user) {
       return res.status(404).json({
@@ -702,6 +808,13 @@ export const logout = async (req, res) => {
 // ==================== DELETE ACCOUNT ====================
 export const deleteAccount = async (req, res) => {
   try {
+    if (req.user.id === "env-admin") {
+      return res.status(400).json({
+        success: false,
+        message: "Env admin account cannot be deleted from this route.",
+      });
+    }
+
     const { password } = req.body;
 
     if (!password) {
@@ -758,11 +871,11 @@ export const getAllUsers = async (req, res) => {
     if (role) filter.role = role;
     if (isActive !== undefined) filter.isActive = isActive === "true";
 
-    const skip = (parseInt(page) - 1) * parseInt(limit);
+    const skip = (parseInt(page, 10) - 1) * parseInt(limit, 10);
 
     const users = await User.find(filter)
       .skip(skip)
-      .limit(parseInt(limit))
+      .limit(parseInt(limit, 10))
       .sort({ createdAt: -1 });
 
     const total = await User.countDocuments(filter);
@@ -773,9 +886,9 @@ export const getAllUsers = async (req, res) => {
         users,
         pagination: {
           total,
-          page: parseInt(page),
-          limit: parseInt(limit),
-          pages: Math.ceil(total / parseInt(limit)),
+          page: parseInt(page, 10),
+          limit: parseInt(limit, 10),
+          pages: Math.ceil(total / parseInt(limit, 10)),
         },
       },
     });
@@ -807,11 +920,187 @@ export const toggleUserStatus = async (req, res) => {
 
     res.status(200).json({
       success: true,
-      message: `User ${user.isActive ? "activated" : "deactivated"} successfully`,
+      message: `User ${
+        user.isActive ? "activated" : "deactivated"
+      } successfully`,
       data: { user },
     });
   } catch (error) {
     console.error("Toggle user status error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Internal server error",
+      error: error.message,
+    });
+  }
+};
+
+// ==================== DELETE OWN PROFILE DATA ====================
+export const deleteOwnProfileData = async (req, res) => {
+  try {
+    if (req.user.id === "env-admin") {
+      return res.status(400).json({
+        success: false,
+        message: "Env admin profile data cannot be deleted from this route.",
+      });
+    }
+
+    const user = await User.findById(req.user.id);
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    user.studentProfile = {
+      university: "",
+      major: "",
+      graduationYear: undefined,
+      skills: [],
+      certifications: [],
+      resume: "",
+      bio: "",
+    };
+
+    user.companyProfile = {
+      companyName: "",
+      industry: "",
+      website: "",
+      description: "",
+      location: "",
+      employeeCount: "",
+      logo: "",
+    };
+
+    user.profileCompleted = false;
+    await user.save();
+
+    res.status(200).json({
+      success: true,
+      message: "Profile data deleted successfully",
+    });
+  } catch (error) {
+    console.error("Delete own profile data error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Internal server error",
+      error: error.message,
+    });
+  }
+};
+
+// ==================== ADMIN UPDATE USER PROFILE DATA ====================
+export const adminUpdateUserProfile = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const { firstName, lastName, email, studentProfile, companyProfile } = req.body;
+
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    if (firstName !== undefined) user.firstName = firstName;
+    if (lastName !== undefined) user.lastName = lastName;
+    if (email !== undefined) user.email = email.trim().toLowerCase();
+
+    if (user.role === "student" && studentProfile) {
+      user.studentProfile = {
+        ...user.studentProfile,
+        ...studentProfile,
+      };
+    }
+
+    if (user.role === "company" && companyProfile) {
+      user.companyProfile = {
+        ...user.companyProfile,
+        ...companyProfile,
+      };
+    }
+
+    if (user.role === "student") {
+      const sp = user.studentProfile || {};
+      user.profileCompleted = !!(
+        sp.university &&
+        sp.major &&
+        sp.skills?.length > 0
+      );
+    } else if (user.role === "company") {
+      const cp = user.companyProfile || {};
+      user.profileCompleted = !!(
+        cp.companyName &&
+        cp.industry &&
+        cp.description
+      );
+    }
+
+    await user.save();
+
+    res.status(200).json({
+      success: true,
+      message: "User profile updated successfully",
+      data: { user },
+    });
+  } catch (error) {
+    console.error("Admin update user profile error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Internal server error",
+      error: error.message,
+    });
+  }
+};
+
+// ==================== ADMIN DELETE USER PROFILE DATA ====================
+export const adminDeleteUserProfile = async (req, res) => {
+  try {
+    const { userId } = req.params;
+
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    if (user.role === "student") {
+      user.studentProfile = {
+        university: "",
+        major: "",
+        graduationYear: undefined,
+        skills: [],
+        certifications: [],
+        resume: "",
+        bio: "",
+      };
+    }
+
+    if (user.role === "company") {
+      user.companyProfile = {
+        companyName: "",
+        industry: "",
+        website: "",
+        description: "",
+        location: "",
+        employeeCount: "",
+        logo: "",
+      };
+    }
+
+    user.profileCompleted = false;
+    await user.save();
+
+    res.status(200).json({
+      success: true,
+      message: "User profile data deleted successfully",
+    });
+  } catch (error) {
+    console.error("Admin delete user profile error:", error);
     res.status(500).json({
       success: false,
       message: "Internal server error",
