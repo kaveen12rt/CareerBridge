@@ -6,7 +6,7 @@ import {
   Link,
   useNavigate,
 } from "react-router-dom";
-import CompanyJobsMain from "./pages/CompanyJobsMain";
+import CompanyJobsMain from "./pages/CompanyJobs/CompanyJobsMain";
 import StudentHome from "./pages/StudentProfile";
 import SignIn from "./pages/SignIn";
 import SignUp from "./pages/SignUp";
