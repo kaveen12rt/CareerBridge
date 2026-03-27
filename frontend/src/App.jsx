@@ -5,7 +5,9 @@ import {
   Route,
   Link,
   useNavigate,
+  useLocation,
 } from "react-router-dom";
+
 import CompanyJobsMain from "./pages/CompanyJobs/CompanyJobsMain";
 import StudentHome from "./pages/StudentProfile";
 import SignIn from "./pages/SignIn";
@@ -19,6 +21,10 @@ import StudentProfileDashboard from "./pages/StudentProfileDashboard";
 import FeedbackPage from "./pages/FeedbackPage";
 import ChatbotWidget from "./components/chatbot/ChatbotWidget";
 import ContactUsPage from "./pages/ContactUsPage";
+
+import JobSearch from "./pages/JobMatch/JobSearch";
+import SmartMatching from "./pages/JobMatch/SmartMatching";
+import CVGenerator from "./pages/JobMatch/CVGenerator";
 
 function AdminDashboard() {
   const [apiStatus, setApiStatus] = useState("Checking...");
@@ -59,7 +65,7 @@ function AdminDashboard() {
           Admin <span className="text-indigo-600">Dashboard</span>
         </h2>
         <p className="text-lg text-gray-500 mb-8 text-center max-w-xl">
-          Manage your team's modules - Company Jobs, Student Profiles,
+          Manage your team&apos;s modules - Company Jobs, Student Profiles,
           Applications, and Job Matching.
         </p>
 
@@ -113,14 +119,13 @@ function AdminDashboard() {
             </p>
           </div>
 
-          <div className="bg-white rounded-xl shadow p-6 border-l-4 border-purple-500 cursor-not-allowed opacity-75">
+          <div className="bg-white rounded-xl shadow p-6 border-l-4 border-purple-500 opacity-90">
             <h3 className="text-lg font-bold text-purple-600 mb-1">
               JobMatch
             </h3>
             <p className="text-gray-500 text-sm">
               Member 3 — Job Search + Smart Matching + CV Generator
             </p>
-            <p className="text-xs text-gray-400 mt-2">Coming Soon...</p>
           </div>
 
           <div className="bg-white rounded-xl shadow p-6 border-l-4 border-pink-500 cursor-not-allowed opacity-75">
@@ -151,9 +156,8 @@ function UserMenu({ currentUser, onLogout }) {
     currentUser.lastName?.[0] || ""
   }`.toUpperCase();
 
-  const fullName = `${currentUser.firstName || ""} ${
-    currentUser.lastName || ""
-  }`.trim();
+  const fullName =
+    `${currentUser.firstName || ""} ${currentUser.lastName || ""}`.trim();
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -163,7 +167,8 @@ function UserMenu({ currentUser, onLogout }) {
     };
 
     document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+    return () =>
+      document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   const goToProfile = () => {
@@ -282,12 +287,21 @@ function UserPortal() {
             <Link to="/" className="text-indigo-600 font-semibold">
               Home
             </Link>
-            <span className="text-gray-600 hover:text-indigo-600 cursor-pointer">
+            <Link to="/jobs" className="text-gray-600 hover:text-indigo-600">
               Jobs
-            </span>
-            <span className="text-gray-600 hover:text-indigo-600 cursor-pointer">
-              Companies
-            </span>
+            </Link>
+            <Link
+              to="/smart-matching"
+              className="text-gray-600 hover:text-indigo-600"
+            >
+              Smart Matching
+            </Link>
+            <Link
+              to="/cv-generator"
+              className="text-gray-600 hover:text-indigo-600"
+            >
+              CV Generator
+            </Link>
             <Link to="/feedback" className="text-gray-600 hover:text-indigo-600">
               Feedback
             </Link>
@@ -327,11 +341,30 @@ function UserPortal() {
   );
 }
 
-function App() {
+function AppContent() {
+  const location = useLocation();
+
+  const hideChatbotRoutes = [
+    "/signin",
+    "/signup",
+    "/forgot-password",
+    "/change-password",
+    "/admin",
+    "/admin/company",
+    "/admin/student-profile",
+  ];
+
+  const shouldHideChatbot =
+    hideChatbotRoutes.includes(location.pathname) ||
+    location.pathname.startsWith("/reset-password/");
+
   return (
-    <Router>
+    <>
       <Routes>
         <Route path="/" element={<UserPortal />} />
+        <Route path="/jobs" element={<JobSearch />} />
+        <Route path="/smart-matching" element={<SmartMatching />} />
+        <Route path="/cv-generator" element={<CVGenerator />} />
         <Route path="/profile" element={<ProfilePage />} />
         <Route path="/profile/edit" element={<EditProfilePage />} />
         <Route path="/change-password" element={<ChangePassword />} />
@@ -349,7 +382,15 @@ function App() {
         <Route path="/contact" element={<ContactUsPage />} />
       </Routes>
 
-      <ChatbotWidget />
+      {!shouldHideChatbot && <ChatbotWidget />}
+    </>
+  );
+}
+
+function App() {
+  return (
+    <Router>
+      <AppContent />
     </Router>
   );
 }
