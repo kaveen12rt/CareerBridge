@@ -35,11 +35,13 @@ const StudentHome = () => {
 
   const filteredJobs = jobs.filter((job) => {
     const title = job?.title || "";
+    const companyName = job?.companyName || "";
     const department = job?.department || "";
     const location = job?.location || "";
 
     return (
       title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      companyName.toLowerCase().includes(searchTerm.toLowerCase()) ||
       department.toLowerCase().includes(searchTerm.toLowerCase()) ||
       location.toLowerCase().includes(searchTerm.toLowerCase())
     );
@@ -61,7 +63,7 @@ const StudentHome = () => {
               <input
                 type="text"
                 className="flex-1 px-6 py-4 text-gray-800 text-lg outline-none rounded-lg"
-                placeholder="Search by job title, department, or location..."
+                placeholder="Search by job title, company, department, or location..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
@@ -180,6 +182,10 @@ const StudentHome = () => {
                         {job?.type || "N/A"}
                       </span>
                     </div>
+
+                    <p className="text-gray-600 font-medium mb-2">
+                      {job?.companyName || "N/A"}
+                    </p>
 
                     <p className="text-gray-600 font-medium mb-2">
                       {job?.department || "N/A"}

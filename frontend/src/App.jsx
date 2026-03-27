@@ -9,6 +9,7 @@ import {
 } from "react-router-dom";
 
 import CompanyJobsMain from "./pages/CompanyJobs/CompanyJobsMain";
+import JobDetails from "./pages/CompanyJobs/JobDetails";
 import StudentHome from "./pages/StudentProfile";
 import SignIn from "./pages/SignIn";
 import SignUp from "./pages/SignUp";
@@ -363,6 +364,7 @@ function AppContent() {
       <Routes>
         <Route path="/" element={<UserPortal />} />
         <Route path="/jobs" element={<JobSearch />} />
+        <Route path="/jobs/:id" element={<JobDetails />} />
         <Route path="/smart-matching" element={<SmartMatching />} />
         <Route path="/cv-generator" element={<CVGenerator />} />
         <Route path="/profile" element={<ProfilePage />} />

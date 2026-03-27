@@ -3,6 +3,8 @@ import { PlusIcon, XMarkIcon } from '@heroicons/react/24/outline';
 
 const JobPostingForm = () => {
   const [formData, setFormData] = useState({
+    companyName: '',
+    companyImage: '',
     title: '',
     department: '',
     location: '',
@@ -13,8 +15,7 @@ const JobPostingForm = () => {
     requirements: [''],
     skills: [''],
     experience: '',
-    deadline: '',
-    image: ''
+    deadline: ''
   });
   const [loading, setLoading] = useState(false);
 
@@ -26,14 +27,14 @@ const JobPostingForm = () => {
     }));
   };
 
-  const handleImageChange = (e) => {
+  const handleCompanyImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
       const reader = new FileReader();
       reader.onloadend = () => {
         setFormData(prev => ({
           ...prev,
-          image: reader.result
+          companyImage: reader.result
         }));
       };
       reader.readAsDataURL(file);
@@ -105,6 +106,21 @@ const JobPostingForm = () => {
           <form onSubmit={handleSubmit} className="p-6 space-y-6">
             {/* Basic Information */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Company Name *
+                </label>
+                <input
+                  type="text"
+                  name="companyName"
+                  required
+                  value={formData.companyName}
+                  onChange={handleInputChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  placeholder="e.g., CareerBridge"
+                />
+              </div>
+
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Job Title *
@@ -224,20 +240,21 @@ const JobPostingForm = () => {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Job Image
+                  Company Photo
                 </label>
                 <input
                   type="file"
                   accept="image/*"
-                  onChange={handleImageChange}
+                  onChange={handleCompanyImageChange}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
-                {formData.image && (
+                {formData.companyImage && (
                   <div className="mt-2">
-                    <img src={formData.image} alt="Preview" className="h-32 w-32 object-cover rounded-md" />
+                    <img src={formData.companyImage} alt="Company Preview" className="h-20 w-20 object-cover rounded-md" />
                   </div>
                 )}
               </div>
+
             </div>
 
             {/* Description */}

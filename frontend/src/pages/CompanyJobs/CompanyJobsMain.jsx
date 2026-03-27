@@ -5,10 +5,7 @@ import CompanyJobsNavigation from '../../components/CompanyJobs/CompanyJobsNavig
 import {
   CompanyDashboard,
   JobPostingForm,
-  InterviewSlots,
-  AllInterviewSlots,
-  JobManagement,
-  ApplicantsList
+  JobManagement
 } from './index';
 
 const CompanyJobsMain = () => {
@@ -23,12 +20,6 @@ const CompanyJobsMain = () => {
         return <JobPostingForm />;
       case 'manage-jobs':
         return <JobManagement />;
-      case 'interview-slots':
-        return <InterviewSlots />;
-      case 'all-slots':
-        return <AllInterviewSlots />;
-      case 'applicants':
-        return <ApplicantsList />;
       default:
         return <CompanyDashboard onNavigate={setCurrentPage} />;
     }

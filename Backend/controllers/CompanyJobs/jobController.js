@@ -9,6 +9,9 @@ const createSampleJobs = async (req, res) => {
 
     const sampleJobs = [
       {
+        companyName: "CareerBridge",
+        companyImage:
+          "https://images.unsplash.com/photo-1560179707-f14e90ef3623?w=200&h=200&fit=crop",
         title: "HR Manager",
         department: "HR department",
         location: "Colombo",
@@ -38,6 +41,9 @@ const createSampleJobs = async (req, res) => {
         interviewsCount: 2,
       },
       {
+        companyName: "CareerBridge",
+        companyImage:
+          "https://images.unsplash.com/photo-1560179707-f14e90ef3623?w=200&h=200&fit=crop",
         title: "Software Engineer",
         department: "Engineering",
         location: "San Francisco, CA",
@@ -62,6 +68,9 @@ const createSampleJobs = async (req, res) => {
         interviewsCount: 5,
       },
       {
+        companyName: "CareerBridge",
+        companyImage:
+          "https://images.unsplash.com/photo-1560179707-f14e90ef3623?w=200&h=200&fit=crop",
         title: "Product Manager",
         department: "Product",
         location: "New York, NY",
@@ -92,6 +101,9 @@ const createSampleJobs = async (req, res) => {
         interviewsCount: 3,
       },
       {
+        companyName: "CareerBridge",
+        companyImage:
+          "https://images.unsplash.com/photo-1560179707-f14e90ef3623?w=200&h=200&fit=crop",
         title: "UX Designer",
         department: "Design",
         location: "Los Angeles, CA",
@@ -122,6 +134,9 @@ const createSampleJobs = async (req, res) => {
         interviewsCount: 4,
       },
       {
+        companyName: "CareerBridge",
+        companyImage:
+          "https://images.unsplash.com/photo-1560179707-f14e90ef3623?w=200&h=200&fit=crop",
         title: "Data Analyst",
         department: "Analytics",
         location: "Remote",
@@ -146,6 +161,9 @@ const createSampleJobs = async (req, res) => {
         interviewsCount: 3,
       },
       {
+        companyName: "CareerBridge",
+        companyImage:
+          "https://images.unsplash.com/photo-1560179707-f14e90ef3623?w=200&h=200&fit=crop",
         title: "Marketing Specialist",
         department: "Marketing",
         location: "Chicago, IL",
@@ -224,6 +242,8 @@ const getJobById = async (req, res) => {
 const createJob = async (req, res) => {
   try {
     const {
+      companyName,
+      companyImage,
       title,
       department,
       location,
@@ -235,17 +255,20 @@ const createJob = async (req, res) => {
       skills,
       experience,
       deadline,
+      image,
     } = req.body;
 
-    if (!title || !department || !location || !description) {
+    if (!companyName || !title || !department || !location || !description) {
       return res.status(400).json({
-        message: "Missing required fields: title, department, location, description",
+        message: "Missing required fields: companyName, title, department, location, description",
       });
     }
 
     const companyId = "507f1f77bcf86cd799439011";
 
     const job = new Job({
+      companyName,
+      companyImage,
       title,
       department,
       location,
@@ -257,6 +280,7 @@ const createJob = async (req, res) => {
       skills: skills || [],
       experience,
       deadline,
+      image,
       companyId,
     });
 

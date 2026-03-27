@@ -2,6 +2,15 @@ import mongoose from "mongoose";
 
 const jobSchema = new mongoose.Schema(
   {
+    companyName: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+    companyImage: {
+      type: String,
+      trim: true,
+    },
     title: {
       type: String,
       required: true,
