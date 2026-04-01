@@ -78,8 +78,21 @@ const JobManagement = () => {
   };
 
   const filteredJobs = jobs.filter(job => {
-    const matchesSearch = job.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         job.department.toLowerCase().includes(searchTerm.toLowerCase());
+    const term = searchTerm.trim().toLowerCase();
+    const title = String(job?.title || '').toLowerCase();
+    const department = String(job?.department || '').toLowerCase();
+    const companyName = String(job?.companyName || '').toLowerCase();
+    const location = String(job?.location || '').toLowerCase();
+    const type = String(job?.type || '').toLowerCase();
+
+    const matchesSearch =
+      !term ||
+      title.includes(term) ||
+      department.includes(term) ||
+      companyName.includes(term) ||
+      location.includes(term) ||
+      type.includes(term);
+
     const matchesStatus = statusFilter === 'all' || job.status === statusFilter;
     return matchesSearch && matchesStatus;
   });
@@ -95,6 +108,12 @@ const JobManagement = () => {
       default:
         return 'bg-gray-100 text-gray-800';
     }
+  };
+
+  const getCompanyInitials = (name) => {
+    const parts = String(name || 'Company').trim().split(' ').filter(Boolean);
+    const initials = parts.slice(0, 2).map((part) => part[0]?.toUpperCase() || '').join('');
+    return initials || 'CO';
   };
 
   return (
@@ -117,7 +136,7 @@ const JobManagement = () => {
                 type="text"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                placeholder="Search by title or department..."
+                placeholder="Search by title, company, department, location, or type..."
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
@@ -180,11 +199,25 @@ const JobManagement = () => {
                 {filteredJobs.map((job) => (
                   <tr key={job._id} className="hover:bg-gray-50">
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div>
-                        <div className="text-sm font-medium text-gray-900">{job.title}</div>
-                        <div className="text-sm text-gray-500">{job.department}</div>
-                        <div className="text-xs text-gray-400">
-                          Posted: {new Date(job.createdAt).toLocaleDateString()}
+                      <div className="flex items-start gap-3">
+                        <div className="w-10 h-10 rounded-md overflow-hidden border border-gray-200 bg-gray-50 flex items-center justify-center text-xs font-semibold text-gray-600 flex-shrink-0">
+                          {job.companyImage ? (
+                            <img
+                              src={job.companyImage}
+                              alt={job.companyName || 'Company'}
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            getCompanyInitials(job.companyName)
+                          )}
+                        </div>
+                        <div>
+                          <div className="text-sm font-medium text-gray-900">{job.title}</div>
+                          <div className="text-sm text-gray-500">{job.companyName || 'N/A'}</div>
+                          <div className="text-sm text-gray-500">{job.department}</div>
+                          <div className="text-xs text-gray-400">
+                            Posted: {new Date(job.createdAt).toLocaleDateString()}
+                          </div>
                         </div>
                       </div>
                     </td>
@@ -274,6 +307,8 @@ const JobManagement = () => {
 // Job Edit Form Component
 const JobEditForm = ({ job, onSave, onCancel, loading }) => {
   const [formData, setFormData] = useState({
+    companyName: job.companyName || '',
+    companyImage: job.companyImage || '',
     title: job.title || '',
     department: job.department || '',
     location: job.location || '',
@@ -299,6 +334,20 @@ const JobEditForm = ({ job, onSave, onCancel, loading }) => {
       ...prev,
       [name]: value
     }));
+  };
+
+  const handleFileChange = (e, field) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setFormData((prev) => ({
+        ...prev,
+        [field]: reader.result,
+      }));
+    };
+    reader.readAsDataURL(file);
   };
 
   const handleArrayChange = (index, value, field) => {
@@ -331,6 +380,18 @@ const JobEditForm = ({ job, onSave, onCancel, loading }) => {
     <form onSubmit={handleSubmit} className="space-y-4 max-h-[70vh] overflow-y-auto pr-2">
       {/* Basic Information */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Company Name *</label>
+          <input
+            type="text"
+            name="companyName"
+            value={formData.companyName}
+            onChange={handleChange}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            required
+          />
+        </div>
+
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">Job Title *</label>
           <input
@@ -428,6 +489,20 @@ const JobEditForm = ({ job, onSave, onCancel, loading }) => {
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
         </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Company Photo</label>
+          <input
+            type="file"
+            accept="image/*"
+            onChange={(e) => handleFileChange(e, 'companyImage')}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+          {formData.companyImage && (
+            <img src={formData.companyImage} alt="Company" className="mt-2 h-16 w-16 rounded-md object-cover" />
+          )}
+        </div>
+
       </div>
 
       {/* Description */}

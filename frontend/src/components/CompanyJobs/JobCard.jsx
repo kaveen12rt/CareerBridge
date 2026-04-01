@@ -29,6 +29,7 @@ const JobCard = ({ job, onEdit, onDelete, onToggleStatus, showActions = true }) 
             <BriefcaseIcon className="h-5 w-5 text-blue-600 mr-2" />
             <h3 className="text-lg font-semibold text-gray-900">{job.title}</h3>
           </div>
+          {job.companyName && <p className="text-gray-700 mb-1">{job.companyName}</p>}
           <p className="text-gray-600 mb-2">{job.department}</p>
           <div className="flex items-center text-sm text-gray-500 space-x-4">
             <div className="flex items-center">
