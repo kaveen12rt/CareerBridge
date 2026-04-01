@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import ApplicationModal from '../JobMatch/ApplicationModal';
 import {
   BriefcaseIcon,
   MapPinIcon,
@@ -15,10 +16,26 @@ const JobDetails = () => {
   const navigate = useNavigate();
   const [job, setJob] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [currentUser, setCurrentUser] = useState(null);
+  const [showApplyModal, setShowApplyModal] = useState(false);
+  const [applied, setApplied] = useState(false);
 
   useEffect(() => {
     fetchJobDetails();
+    checkAuth();
   }, [id]);
+
+  const checkAuth = async () => {
+    try {
+      const res = await fetch('http://localhost:5000/api/auth/check-auth', {
+        credentials: 'include',
+      });
+      const data = await res.json();
+      if (res.ok && data?.data?.user) setCurrentUser(data.data.user);
+    } catch {
+      // Not logged in – user can still view the job.
+    }
+  };
 
   const fetchJobDetails = async () => {
     try {
@@ -33,8 +50,16 @@ const JobDetails = () => {
   };
 
   const handleApply = () => {
-    // TODO: Implement application logic
-    alert('Application feature coming soon!');
+    if (!currentUser) {
+      navigate('/signin');
+      return;
+    }
+    setShowApplyModal(true);
+  };
+
+  const handleApplicationSuccess = () => {
+    setShowApplyModal(false);
+    setApplied(true);
   };
 
   const formatSalary = (min, max) => {
@@ -89,6 +114,7 @@ const JobDetails = () => {
   }
 
   return (
+    <>
     <div className="min-h-screen bg-gray-100 pb-10">
       <div className="bg-gradient-to-r from-cyan-500 to-sky-600 text-white">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-10">
@@ -200,17 +226,39 @@ const JobDetails = () => {
                 )}
               </div>
 
-              <button
-                onClick={handleApply}
-                className="w-full mt-6 py-3 bg-lime-500 text-white rounded-lg font-bold hover:bg-lime-600 transition-colors"
-              >
-                APPLY FOR JOB
-              </button>
+              {applied ? (
+                <div className="mt-6 p-4 bg-green-50 border border-green-300 rounded-lg text-green-700 text-center font-semibold">
+                  ✓ Application submitted! Track it in{' '}
+                  <button
+                    onClick={() => navigate('/my-applications')}
+                    className="underline hover:text-green-900"
+                  >
+                    My Applications
+                  </button>
+                </div>
+              ) : (
+                <button
+                  onClick={handleApply}
+                  className="w-full mt-6 py-3 bg-lime-500 text-white rounded-lg font-bold hover:bg-lime-600 transition-colors"
+                >
+                  APPLY FOR JOB
+                </button>
+              )}
             </div>
           </div>
         </div>
       </div>
     </div>
+
+      {showApplyModal && job && (
+        <ApplicationModal
+          job={job}
+          studentId={currentUser?.id}
+          onClose={() => setShowApplyModal(false)}
+          onSuccess={handleApplicationSuccess}
+        />
+      )}
+    </>
   );
 };
 

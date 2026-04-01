@@ -4,3 +4,4 @@ export { default as JobPostingForm } from './JobPostingForm';
 export { default as JobManagement } from './JobManagement';
 export { default as JobDetails } from './JobDetails';
 export { default as CompanyJobsMain } from './CompanyJobsMain';
+export { default as InterviewSlotManagement } from './InterviewSlotManagement';

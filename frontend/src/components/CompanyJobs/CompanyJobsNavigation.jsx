@@ -3,14 +3,16 @@ import {
   HomeIcon, 
   BriefcaseIcon, 
   PlusIcon, 
-  PencilIcon
+  PencilIcon,
+  CalendarDaysIcon,
 } from '@heroicons/react/24/outline';
 
 const CompanyJobsNavigation = ({ currentPage, onPageChange }) => {
   const navItems = [
-    { id: 'dashboard', label: 'Dashboard', icon: HomeIcon },
-    { id: 'post-job', label: 'Post Job', icon: PlusIcon },
-    { id: 'manage-jobs', label: 'Manage Jobs', icon: PencilIcon }
+    { id: 'dashboard',       label: 'Dashboard',        icon: HomeIcon          },
+    { id: 'post-job',        label: 'Post Job',          icon: PlusIcon          },
+    { id: 'manage-jobs',     label: 'Manage Jobs',       icon: PencilIcon        },
+    { id: 'interview-slots', label: 'Interview Slots',   icon: CalendarDaysIcon  },
   ];
 
   return (

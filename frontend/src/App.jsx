@@ -1,4 +1,3 @@
-<<<<<<< Updated upstream
 import { useState, useEffect, useRef } from "react";
 import {
   BrowserRouter as Router,
@@ -27,6 +26,8 @@ import ContactUsPage from "./pages/ContactUsPage";
 import JobSearch from "./pages/JobMatch/JobSearch";
 import SmartMatching from "./pages/JobMatch/SmartMatching";
 import CVGenerator from "./pages/JobMatch/CVGenerator";
+import MyApplications from "./pages/JobMatch/MyApplications";
+import ApplicationsDashboard from "./pages/JobMatch/ApplicationsDashboard";
 
 function AdminDashboard() {
   const [apiStatus, setApiStatus] = useState("Checking...");
@@ -130,14 +131,19 @@ function AdminDashboard() {
             </p>
           </div>
 
-          <div className="bg-white rounded-xl shadow p-6 border-l-4 border-pink-500 cursor-not-allowed opacity-75">
+          <div
+            onClick={() => navigate('/admin/applications')}
+            className="bg-white rounded-xl shadow p-6 border-l-4 border-pink-500 cursor-pointer hover:shadow-lg hover:bg-pink-50 transition-all duration-200 transform hover:scale-105"
+          >
             <h3 className="text-lg font-bold text-pink-600 mb-1">
               Applications
             </h3>
             <p className="text-gray-500 text-sm">
               Member 4 — Applications + Interview Booking + Payment
             </p>
-            <p className="text-xs text-gray-400 mt-2">Coming Soon...</p>
+            <p className="text-xs text-pink-500 mt-2 font-semibold">
+              ✨ Click to Enter →
+            </p>
           </div>
         </div>
       </div>
@@ -145,27 +151,10 @@ function AdminDashboard() {
       <footer className="mt-20 py-6 text-center text-gray-400 text-sm">
         © 2026 CareerBridge — ITPM Group Project
       </footer>
-=======
-function App() {
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <div className="bg-white p-6 rounded-xl shadow-md text-center">
-        <h1 className="text-2xl font-bold text-blue-600 mb-2">
-          Hello Tailwind 👋
-        </h1>
-        <p className="text-gray-600">
-          Tailwind CSS is working successfully!
-        </p>
-        <button className="mt-4 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600">
-          Click Me
-        </button>
-      </div>
->>>>>>> Stashed changes
     </div>
-  )
+  );
 }
 
-<<<<<<< Updated upstream
 function UserMenu({ currentUser, onLogout }) {
   const [open, setOpen] = useState(false);
   const navigate = useNavigate();
@@ -321,6 +310,9 @@ function UserPortal() {
             >
               CV Generator
             </Link>
+            <Link to="/my-applications" className="text-gray-600 hover:text-indigo-600">
+              My Applications
+            </Link>
             <Link to="/feedback" className="text-gray-600 hover:text-indigo-600">
               Feedback
             </Link>
@@ -392,6 +384,8 @@ function AppContent() {
         <Route path="/signup" element={<SignUp />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/reset-password/:token" element={<ResetPassword />} />
+        <Route path="/my-applications" element={<MyApplications />} />
+        <Route path="/admin/applications" element={<ApplicationsDashboard />} />
         <Route path="/feedback" element={<FeedbackPage />} />
         <Route path="/admin" element={<AdminDashboard />} />
         <Route path="/admin/company" element={<CompanyJobsMain />} />
@@ -416,6 +410,3 @@ function App() {
 }
 
 export default App;
-=======
-export default App
->>>>>>> Stashed changes

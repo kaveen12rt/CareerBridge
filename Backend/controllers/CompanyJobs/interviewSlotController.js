@@ -247,6 +247,20 @@ const cancelInterviewSlot = async (req, res) => {
   }
 };
 
+// GET all slots (admin dashboard)
+const getAllInterviewSlots = async (req, res) => {
+  try {
+    const { limit = 50 } = req.query;
+    const slots = await InterviewSlot.find()
+      .populate("jobId", "title companyName")
+      .sort({ date: 1, time: 1 })
+      .limit(Number(limit));
+    res.json(slots);
+  } catch (error) {
+    res.status(500).json({ message: "Error fetching all interview slots", error: error.message });
+  }
+};
+
 export {
   getInterviewSlotsByJob,
   getInterviewSlotById,
@@ -256,4 +270,5 @@ export {
   bookInterviewSlot,
   cancelInterviewSlot,
   getAvailableSlots,
+  getAllInterviewSlots,
 };

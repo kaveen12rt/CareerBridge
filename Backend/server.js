@@ -10,6 +10,8 @@ import chatbotRoutes from "./routes/chatbotRoutes.js";
 import contactRoutes from "./routes/contactRoutes.js";
 import jobRoutes from "./routes/CompanyJobs/jobRoutes.js";
 import interviewSlotRoutes from "./routes/CompanyJobs/interviewSlotRoutes.js";
+import applicationRoutes from "./routes/JobMatch/applicationRoutes.js";
+import paymentRoutes from "./routes/JobMatch/paymentRoutes.js";
 
 // Load environment variables
 dotenv.config();
@@ -53,6 +55,8 @@ app.use("/api/chatbot", chatbotRoutes);
 app.use("/api/contact", contactRoutes);
 app.use("/api/jobs", jobRoutes);
 app.use("/api/interview-slots", interviewSlotRoutes);
+app.use("/api/applications", applicationRoutes);
+app.use("/api/payments", paymentRoutes);
 
 // 404 HANDLER
 app.use((req, res) => {

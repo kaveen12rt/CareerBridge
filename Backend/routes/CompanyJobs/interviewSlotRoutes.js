@@ -8,9 +8,13 @@ import {
   bookInterviewSlot,
   cancelInterviewSlot,
   getAvailableSlots,
+  getAllInterviewSlots,
 } from "../../controllers/CompanyJobs/interviewSlotController.js";
 
 const router = express.Router();
+
+// Admin: all slots across all jobs (must be before /:id)
+router.get("/admin/all", getAllInterviewSlots);
 
 // GET /api/interview-slots/job/:jobId
 router.get("/job/:jobId", getInterviewSlotsByJob);
