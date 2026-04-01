@@ -1,6 +1,7 @@
 import Job from "../../models/CompanyJobs/Job.js";
 import InterviewSlot from "../../models/CompanyJobs/InterviewSlot.js";
 import mongoose from "mongoose";
+import { analyzeJobPostQuality } from "../../utils/CompanyJobs/jobQualityAnalyzer.js";
 
 // Create sample jobs for testing
 const createSampleJobs = async (req, res) => {
@@ -195,8 +196,13 @@ const createSampleJobs = async (req, res) => {
       },
     ];
 
+    const sampleJobsWithQuality = sampleJobs.map((job) => ({
+      ...job,
+      qualityAnalysis: analyzeJobPostQuality(job),
+    }));
+
     await Job.deleteMany({});
-    const jobs = await Job.insertMany(sampleJobs);
+    const jobs = await Job.insertMany(sampleJobsWithQuality);
 
     res.json({ message: "Sample jobs created successfully", jobs });
   } catch (error) {
@@ -282,6 +288,7 @@ const createJob = async (req, res) => {
       deadline,
       image,
       companyId,
+      qualityAnalysis: analyzeJobPostQuality(req.body),
     });
 
     const savedJob = await job.save();
@@ -309,7 +316,17 @@ const updateJob = async (req, res) => {
       return res.status(404).json({ message: "Job not found" });
     }
 
-    const updatedJob = await Job.findByIdAndUpdate(id, req.body, {
+    const mergedPayload = {
+      ...job.toObject(),
+      ...req.body,
+    };
+
+    const updatedPayload = {
+      ...req.body,
+      qualityAnalysis: analyzeJobPostQuality(mergedPayload),
+    };
+
+    const updatedJob = await Job.findByIdAndUpdate(id, updatedPayload, {
       new: true,
       runValidators: true,
     });

@@ -1,32 +1,39 @@
 import { useState, useEffect } from 'react';
 import { PlusIcon, BriefcaseIcon, PencilIcon } from '@heroicons/react/24/outline';
+import { analyzeJobPostQuality } from './jobQualityAnalyzer';
 
 const CompanyDashboard = ({ onNavigate }) => {
   const [stats, setStats] = useState({
     totalJobs: 0,
-    activeJobs: 0
+    activeJobs: 0,
+    averageQuality: 0,
+    weakPosts: 0
   });
   const [recentJobs, setRecentJobs] = useState([]);
 
-  useEffect(() => {
-    // Fetch dashboard data
-    fetchDashboardData();
-  }, []);
-
-  const fetchDashboardData = async () => {
+  async function fetchDashboardData() {
     try {
       const response = await fetch('http://localhost:5000/api/jobs');
       if (response.ok) {
         const jobs = await response.json();
         const safeJobs = Array.isArray(jobs) ? jobs : [];
         const activeJobs = safeJobs.filter((job) => job?.status === 'active').length;
+        const analyzedJobs = safeJobs.map((job) => ({
+          ...job,
+          quality: analyzeJobPostQuality(job),
+        }));
+        const qualityTotal = analyzedJobs.reduce((sum, job) => sum + (job.quality?.score || 0), 0);
+        const averageQuality = analyzedJobs.length > 0 ? Math.round(qualityTotal / analyzedJobs.length) : 0;
+        const weakPosts = analyzedJobs.filter((job) => (job.quality?.score || 0) < 70).length;
 
         setStats({
           totalJobs: safeJobs.length,
           activeJobs,
+          averageQuality,
+          weakPosts,
         });
 
-        const sortedRecentJobs = [...safeJobs]
+        const sortedRecentJobs = [...analyzedJobs]
           .sort((a, b) => new Date(b?.createdAt || 0) - new Date(a?.createdAt || 0))
           .slice(0, 5)
           .map((job) => ({
@@ -35,6 +42,8 @@ const CompanyDashboard = ({ onNavigate }) => {
             type: job?.type || 'N/A',
             applicants: job?.applicationsCount || 0,
             status: job?.status || 'inactive',
+            qualityScore: job?.quality?.score || 0,
+            qualityTier: job?.quality?.tier || 'Needs Work',
           }));
 
         setRecentJobs(sortedRecentJobs);
@@ -42,7 +51,15 @@ const CompanyDashboard = ({ onNavigate }) => {
     } catch (error) {
       console.error('Error fetching dashboard data:', error);
     }
-  };
+  }
+
+  useEffect(() => {
+    const timerId = setTimeout(() => {
+      fetchDashboardData();
+    }, 0);
+
+    return () => clearTimeout(timerId);
+  }, []);
 
   const createSampleJobs = async () => {
     try {
@@ -61,6 +78,22 @@ const CompanyDashboard = ({ onNavigate }) => {
     }
   };
 
+  const getQualityBadge = (score) => {
+    if (score >= 85) {
+      return 'bg-emerald-100 text-emerald-800';
+    }
+
+    if (score >= 70) {
+      return 'bg-blue-100 text-blue-800';
+    }
+
+    if (score >= 50) {
+      return 'bg-amber-100 text-amber-800';
+    }
+
+    return 'bg-rose-100 text-rose-800';
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 p-6">
       <div className="max-w-7xl mx-auto">
@@ -71,7 +104,7 @@ const CompanyDashboard = ({ onNavigate }) => {
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 mb-8">
           <div className="bg-white rounded-lg shadow-md p-6">
             <div className="flex items-center">
               <BriefcaseIcon className="h-8 w-8 text-blue-600" />
@@ -88,6 +121,26 @@ const CompanyDashboard = ({ onNavigate }) => {
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-600">Active Jobs</p>
                 <p className="text-2xl font-bold text-gray-900">{stats.activeJobs}</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-lg shadow-md p-6">
+            <div className="flex items-center">
+              <BriefcaseIcon className="h-8 w-8 text-indigo-600" />
+              <div className="ml-4">
+                <p className="text-sm font-medium text-gray-600">Average Quality</p>
+                <p className="text-2xl font-bold text-gray-900">{stats.averageQuality}/100</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-lg shadow-md p-6">
+            <div className="flex items-center">
+              <BriefcaseIcon className="h-8 w-8 text-rose-600" />
+              <div className="ml-4">
+                <p className="text-sm font-medium text-gray-600">Needs Improvement</p>
+                <p className="text-2xl font-bold text-gray-900">{stats.weakPosts}</p>
               </div>
             </div>
           </div>
@@ -148,6 +201,9 @@ const CompanyDashboard = ({ onNavigate }) => {
                       <p className="text-sm text-gray-500">{job.location} • {job.type}</p>
                     </div>
                     <div className="flex items-center space-x-4">
+                      <span className={`px-2 py-1 text-xs font-semibold rounded-full ${getQualityBadge(job.qualityScore)}`}>
+                        Quality {job.qualityScore}
+                      </span>
                       <span className="text-sm text-gray-500">{job.applicants} applicants</span>
                       <span className={`px-2 py-1 text-xs font-medium rounded-full ${
                         job.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
@@ -156,6 +212,7 @@ const CompanyDashboard = ({ onNavigate }) => {
                       </span>
                     </div>
                   </div>
+                  <p className="mt-2 text-xs text-gray-500">Quality Tier: {job.qualityTier}</p>
                 </div>
               ))}
             </div>
