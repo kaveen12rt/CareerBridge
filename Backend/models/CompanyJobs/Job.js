@@ -80,10 +80,6 @@ const jobSchema = new mongoose.Schema(
       type: Number,
       default: 0,
     },
-    interviewsCount: {
-      type: Number,
-      default: 0,
-    },
     qualityAnalysis: {
       score: {
         type: Number,

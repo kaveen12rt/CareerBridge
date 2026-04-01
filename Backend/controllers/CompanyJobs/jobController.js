@@ -1,5 +1,4 @@
 import Job from "../../models/CompanyJobs/Job.js";
-import InterviewSlot from "../../models/CompanyJobs/InterviewSlot.js";
 import mongoose from "mongoose";
 import { analyzeJobPostQuality } from "../../utils/CompanyJobs/jobQualityAnalyzer.js";
 
@@ -39,7 +38,6 @@ const createSampleJobs = async (req, res) => {
           "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=400&h=300&fit=crop",
         companyId,
         applicationsCount: 5,
-        interviewsCount: 2,
       },
       {
         companyName: "CareerBridge",
@@ -66,7 +64,6 @@ const createSampleJobs = async (req, res) => {
           "https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=400&h=300&fit=crop",
         companyId,
         applicationsCount: 15,
-        interviewsCount: 5,
       },
       {
         companyName: "CareerBridge",
@@ -99,7 +96,6 @@ const createSampleJobs = async (req, res) => {
           "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=400&h=300&fit=crop",
         companyId,
         applicationsCount: 8,
-        interviewsCount: 3,
       },
       {
         companyName: "CareerBridge",
@@ -132,7 +128,6 @@ const createSampleJobs = async (req, res) => {
           "https://images.unsplash.com/photo-1561070791-2526d30994b5?w=400&h=300&fit=crop",
         companyId,
         applicationsCount: 12,
-        interviewsCount: 4,
       },
       {
         companyName: "CareerBridge",
@@ -159,7 +154,6 @@ const createSampleJobs = async (req, res) => {
           "https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=400&h=300&fit=crop",
         companyId,
         applicationsCount: 10,
-        interviewsCount: 3,
       },
       {
         companyName: "CareerBridge",
@@ -192,7 +186,6 @@ const createSampleJobs = async (req, res) => {
           "https://images.unsplash.com/photo-1533750516457-a7f992034fec?w=400&h=300&fit=crop",
         companyId,
         applicationsCount: 18,
-        interviewsCount: 6,
       },
     ];
 
@@ -356,11 +349,10 @@ const deleteJob = async (req, res) => {
       return res.status(404).json({ message: "Job not found" });
     }
 
-    await InterviewSlot.deleteMany({ jobId: id });
     await Job.findByIdAndDelete(id);
 
     res.json({
-      message: "Job and associated interview slots deleted successfully",
+      message: "Job deleted successfully",
     });
   } catch (error) {
     console.error("Delete job error:", error);
@@ -381,15 +373,10 @@ const getJobsStats = async (req, res) => {
       { $group: { _id: null, total: { $sum: "$applicationsCount" } } },
     ]);
 
-    const scheduledInterviews = await Job.aggregate([
-      { $group: { _id: null, total: { $sum: "$interviewsCount" } } },
-    ]);
-
     const stats = {
       totalJobs,
       activeJobs,
       totalApplicants: totalApplicants[0]?.total || 0,
-      scheduledInterviews: scheduledInterviews[0]?.total || 0,
     };
 
     const recentJobs = await Job.find()
