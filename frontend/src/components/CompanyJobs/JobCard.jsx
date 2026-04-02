@@ -58,7 +58,6 @@ const JobCard = ({ job, onEdit, onDelete, onToggleStatus, showActions = true }) 
       <div className="flex items-center justify-between text-sm text-gray-500 mb-4">
         <div className="flex space-x-4">
           <span>{job.applicationsCount || 0} applications</span>
-          <span>{job.interviewsCount || 0} interviews</span>
         </div>
         <span>Posted: {new Date(job.createdAt).toLocaleDateString()}</span>
       </div>

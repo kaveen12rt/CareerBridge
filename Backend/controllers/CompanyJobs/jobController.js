@@ -1,6 +1,6 @@
 import Job from "../../models/CompanyJobs/Job.js";
-import InterviewSlot from "../../models/CompanyJobs/InterviewSlot.js";
 import mongoose from "mongoose";
+import { analyzeJobPostQuality } from "../../utils/CompanyJobs/jobQualityAnalyzer.js";
 
 // Create sample jobs for testing
 const createSampleJobs = async (req, res) => {
@@ -38,7 +38,6 @@ const createSampleJobs = async (req, res) => {
           "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=400&h=300&fit=crop",
         companyId,
         applicationsCount: 5,
-        interviewsCount: 2,
       },
       {
         companyName: "CareerBridge",
@@ -65,7 +64,6 @@ const createSampleJobs = async (req, res) => {
           "https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=400&h=300&fit=crop",
         companyId,
         applicationsCount: 15,
-        interviewsCount: 5,
       },
       {
         companyName: "CareerBridge",
@@ -98,7 +96,6 @@ const createSampleJobs = async (req, res) => {
           "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=400&h=300&fit=crop",
         companyId,
         applicationsCount: 8,
-        interviewsCount: 3,
       },
       {
         companyName: "CareerBridge",
@@ -131,7 +128,6 @@ const createSampleJobs = async (req, res) => {
           "https://images.unsplash.com/photo-1561070791-2526d30994b5?w=400&h=300&fit=crop",
         companyId,
         applicationsCount: 12,
-        interviewsCount: 4,
       },
       {
         companyName: "CareerBridge",
@@ -158,7 +154,6 @@ const createSampleJobs = async (req, res) => {
           "https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=400&h=300&fit=crop",
         companyId,
         applicationsCount: 10,
-        interviewsCount: 3,
       },
       {
         companyName: "CareerBridge",
@@ -191,12 +186,16 @@ const createSampleJobs = async (req, res) => {
           "https://images.unsplash.com/photo-1533750516457-a7f992034fec?w=400&h=300&fit=crop",
         companyId,
         applicationsCount: 18,
-        interviewsCount: 6,
       },
     ];
 
+    const sampleJobsWithQuality = sampleJobs.map((job) => ({
+      ...job,
+      qualityAnalysis: analyzeJobPostQuality(job),
+    }));
+
     await Job.deleteMany({});
-    const jobs = await Job.insertMany(sampleJobs);
+    const jobs = await Job.insertMany(sampleJobsWithQuality);
 
     res.json({ message: "Sample jobs created successfully", jobs });
   } catch (error) {
@@ -210,7 +209,61 @@ const createSampleJobs = async (req, res) => {
 // Get all jobs
 const getAllJobs = async (req, res) => {
   try {
-    const jobs = await Job.find().sort({ createdAt: -1 });
+    const {
+      search = "",
+      location = "",
+      department = "",
+      jobType = "",
+      sort = "recent",
+      urgent = "false",
+      status = "",
+    } = req.query;
+
+    const query = {};
+
+    if (search && String(search).trim()) {
+      const searchRegex = new RegExp(String(search).trim(), "i");
+      query.$or = [
+        { title: searchRegex },
+        { companyName: searchRegex },
+        { department: searchRegex },
+        { location: searchRegex },
+      ];
+    }
+
+    if (location && String(location).trim()) {
+      query.location = new RegExp(`^${String(location).trim()}$`, "i");
+    }
+
+    if (department && String(department).trim()) {
+      query.department = new RegExp(`^${String(department).trim()}$`, "i");
+    }
+
+    if (jobType && String(jobType).trim()) {
+      query.type = new RegExp(`^${String(jobType).trim()}$`, "i");
+    }
+
+    if (status && String(status).trim()) {
+      query.status = new RegExp(`^${String(status).trim()}$`, "i");
+    }
+
+    if (String(urgent).toLowerCase() === "true") {
+      const now = new Date();
+      now.setHours(0, 0, 0, 0);
+
+      const sevenDaysFromNow = new Date(now);
+      sevenDaysFromNow.setDate(sevenDaysFromNow.getDate() + 7);
+      sevenDaysFromNow.setHours(23, 59, 59, 999);
+
+      query.deadline = {
+        $gte: now,
+        $lte: sevenDaysFromNow,
+      };
+    }
+
+    const sortBy = String(sort).toLowerCase() === "oldest" ? { createdAt: 1 } : { createdAt: -1 };
+
+    const jobs = await Job.find(query).sort(sortBy);
     res.json(jobs);
   } catch (error) {
     res.status(500).json({
@@ -282,6 +335,7 @@ const createJob = async (req, res) => {
       deadline,
       image,
       companyId,
+      qualityAnalysis: analyzeJobPostQuality(req.body),
     });
 
     const savedJob = await job.save();
@@ -309,7 +363,17 @@ const updateJob = async (req, res) => {
       return res.status(404).json({ message: "Job not found" });
     }
 
-    const updatedJob = await Job.findByIdAndUpdate(id, req.body, {
+    const mergedPayload = {
+      ...job.toObject(),
+      ...req.body,
+    };
+
+    const updatedPayload = {
+      ...req.body,
+      qualityAnalysis: analyzeJobPostQuality(mergedPayload),
+    };
+
+    const updatedJob = await Job.findByIdAndUpdate(id, updatedPayload, {
       new: true,
       runValidators: true,
     });
@@ -339,11 +403,10 @@ const deleteJob = async (req, res) => {
       return res.status(404).json({ message: "Job not found" });
     }
 
-    await InterviewSlot.deleteMany({ jobId: id });
     await Job.findByIdAndDelete(id);
 
     res.json({
-      message: "Job and associated interview slots deleted successfully",
+      message: "Job deleted successfully",
     });
   } catch (error) {
     console.error("Delete job error:", error);
@@ -364,15 +427,10 @@ const getJobsStats = async (req, res) => {
       { $group: { _id: null, total: { $sum: "$applicationsCount" } } },
     ]);
 
-    const scheduledInterviews = await Job.aggregate([
-      { $group: { _id: null, total: { $sum: "$interviewsCount" } } },
-    ]);
-
     const stats = {
       totalJobs,
       activeJobs,
       totalApplicants: totalApplicants[0]?.total || 0,
-      scheduledInterviews: scheduledInterviews[0]?.total || 0,
     };
 
     const recentJobs = await Job.find()

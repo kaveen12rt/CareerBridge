@@ -1,5 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { PencilIcon, TrashIcon, EyeIcon, PauseIcon, PlayIcon, PlusIcon, XMarkIcon } from '@heroicons/react/24/outline';
+import { analyzeJobPostQuality } from './jobQualityAnalyzer';
 
 const JobManagement = () => {
   const [jobs, setJobs] = useState([]);
@@ -116,6 +117,22 @@ const JobManagement = () => {
     return initials || 'CO';
   };
 
+  const getQualityBadge = (score) => {
+    if (score >= 85) {
+      return 'bg-emerald-100 text-emerald-800';
+    }
+
+    if (score >= 70) {
+      return 'bg-blue-100 text-blue-800';
+    }
+
+    if (score >= 50) {
+      return 'bg-amber-100 text-amber-800';
+    }
+
+    return 'bg-rose-100 text-rose-800';
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 p-6">
       <div className="max-w-7xl mx-auto">
@@ -188,6 +205,9 @@ const JobManagement = () => {
                     Applications
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Quality
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Status
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -197,6 +217,9 @@ const JobManagement = () => {
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
                 {filteredJobs.map((job) => (
+                  (() => {
+                    const quality = analyzeJobPostQuality(job);
+                    return (
                   <tr key={job._id} className="hover:bg-gray-50">
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-start gap-3">
@@ -227,7 +250,14 @@ const JobManagement = () => {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm text-gray-900">{job.applicationsCount || 0} applications</div>
-                      <div className="text-sm text-gray-500">{job.interviewsCount || 0} interviews</div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="flex flex-col gap-1">
+                        <span className={`inline-flex w-fit px-2 py-1 text-xs font-semibold rounded-full ${getQualityBadge(quality.score)}`}>
+                          {quality.score}/100
+                        </span>
+                        <span className="text-xs text-gray-500">{quality.tier}</span>
+                      </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(job.status)}`}>
@@ -265,6 +295,8 @@ const JobManagement = () => {
                       </div>
                     </td>
                   </tr>
+                    );
+                  })()
                 ))}
               </tbody>
             </table>
@@ -322,9 +354,42 @@ const JobEditForm = ({ job, onSave, onCancel, loading }) => {
     deadline: job.deadline ? new Date(job.deadline).toISOString().split('T')[0] : '',
     status: job.status || 'active'
   });
+  const qualityAnalysis = useMemo(() => analyzeJobPostQuality(formData), [formData]);
+
+  const getQualityTheme = (score) => {
+    if (score >= 85) {
+      return 'bg-emerald-50 border-emerald-200 text-emerald-700';
+    }
+
+    if (score >= 70) {
+      return 'bg-blue-50 border-blue-200 text-blue-700';
+    }
+
+    if (score >= 50) {
+      return 'bg-amber-50 border-amber-200 text-amber-700';
+    }
+
+    return 'bg-rose-50 border-rose-200 text-rose-700';
+  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
+
+    if (qualityAnalysis.criticalIssues.length > 0) {
+      alert(`Please fix these issues before saving:\n- ${qualityAnalysis.criticalIssues.join('\n- ')}`);
+      return;
+    }
+
+    if (qualityAnalysis.score < 70) {
+      const shouldContinue = confirm(
+        `Job quality score is ${qualityAnalysis.score}/100 (${qualityAnalysis.tier}). Save anyway?`
+      );
+
+      if (!shouldContinue) {
+        return;
+      }
+    }
+
     onSave(formData);
   };
 
@@ -378,6 +443,28 @@ const JobEditForm = ({ job, onSave, onCancel, loading }) => {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4 max-h-[70vh] overflow-y-auto pr-2">
+      <div className={`border rounded-lg p-4 ${getQualityTheme(qualityAnalysis.score)}`}>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <h4 className="text-base font-semibold">AI Job Quality Analyzer</h4>
+            <p className="text-sm opacity-90">Review quality before updating this vacancy.</p>
+          </div>
+          <div className="text-right">
+            <p className="text-xs uppercase tracking-wide font-semibold">Score</p>
+            <p className="text-2xl font-bold">{qualityAnalysis.score}/100</p>
+            <p className="text-xs font-semibold uppercase tracking-wide">{qualityAnalysis.tier}</p>
+          </div>
+        </div>
+
+        {qualityAnalysis.warnings.length > 0 && (
+          <ul className="mt-3 text-sm list-disc list-inside space-y-1">
+            {qualityAnalysis.warnings.slice(0, 3).map((warning, index) => (
+              <li key={`${warning}-${index}`}>{warning}</li>
+            ))}
+          </ul>
+        )}
+      </div>
+
       {/* Basic Information */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
