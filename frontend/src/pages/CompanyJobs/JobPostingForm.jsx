@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { PlusIcon, XMarkIcon } from '@heroicons/react/24/outline';
+import { analyzeJobPostQuality } from './jobQualityAnalyzer';
 
 const JobPostingForm = () => {
   const [formData, setFormData] = useState({
@@ -18,6 +19,23 @@ const JobPostingForm = () => {
     deadline: ''
   });
   const [loading, setLoading] = useState(false);
+  const qualityAnalysis = useMemo(() => analyzeJobPostQuality(formData), [formData]);
+
+  const getQualityTheme = (score) => {
+    if (score >= 85) {
+      return 'bg-emerald-50 border-emerald-200 text-emerald-700';
+    }
+
+    if (score >= 70) {
+      return 'bg-blue-50 border-blue-200 text-blue-700';
+    }
+
+    if (score >= 50) {
+      return 'bg-amber-50 border-amber-200 text-amber-700';
+    }
+
+    return 'bg-rose-50 border-rose-200 text-rose-700';
+  };
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -69,6 +87,22 @@ const JobPostingForm = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (qualityAnalysis.criticalIssues.length > 0) {
+      alert(`Please fix these issues before publishing:\n- ${qualityAnalysis.criticalIssues.join('\n- ')}`);
+      return;
+    }
+
+    if (qualityAnalysis.score < 70) {
+      const shouldContinue = confirm(
+        `Job quality score is ${qualityAnalysis.score}/100 (${qualityAnalysis.tier}). Continue with publishing?`
+      );
+
+      if (!shouldContinue) {
+        return;
+      }
+    }
+
     setLoading(true);
 
     try {
@@ -82,7 +116,21 @@ const JobPostingForm = () => {
 
       if (response.ok) {
         alert('Job posted successfully!');
-        // Reset form or redirect
+        setFormData({
+          companyName: '',
+          companyImage: '',
+          title: '',
+          department: '',
+          location: '',
+          type: 'full-time',
+          salaryMin: '',
+          salaryMax: '',
+          description: '',
+          requirements: [''],
+          skills: [''],
+          experience: '',
+          deadline: ''
+        });
       } else {
         alert('Failed to post job. Please try again.');
       }
@@ -101,6 +149,44 @@ const JobPostingForm = () => {
           <div className="px-6 py-4 border-b border-gray-200">
             <h1 className="text-2xl font-bold text-gray-900">Post a New Job</h1>
             <p className="text-gray-600 mt-1">Fill in the details to create a job posting</p>
+          </div>
+
+          <div className="px-6 pt-6">
+            <div className={`border rounded-lg p-4 ${getQualityTheme(qualityAnalysis.score)}`}>
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div>
+                  <h2 className="text-lg font-semibold">AI Job Post Quality Analyzer</h2>
+                  <p className="text-sm opacity-90">Score updates live as you complete the vacancy details.</p>
+                </div>
+                <div className="text-right">
+                  <p className="text-sm font-medium">Quality Score</p>
+                  <p className="text-3xl font-bold">{qualityAnalysis.score}/100</p>
+                  <p className="text-xs font-semibold uppercase tracking-wide">{qualityAnalysis.tier}</p>
+                </div>
+              </div>
+
+              {qualityAnalysis.warnings.length > 0 && (
+                <div className="mt-4">
+                  <p className="text-sm font-semibold">Warnings</p>
+                  <ul className="mt-1 text-sm list-disc list-inside space-y-1">
+                    {qualityAnalysis.warnings.slice(0, 4).map((warning, index) => (
+                      <li key={`${warning}-${index}`}>{warning}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {qualityAnalysis.suggestions.length > 0 && (
+                <div className="mt-3">
+                  <p className="text-sm font-semibold">Suggestions</p>
+                  <ul className="mt-1 text-sm list-disc list-inside space-y-1">
+                    {qualityAnalysis.suggestions.slice(0, 3).map((suggestion, index) => (
+                      <li key={`${suggestion}-${index}`}>{suggestion}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
           </div>
 
           <form onSubmit={handleSubmit} className="p-6 space-y-6">

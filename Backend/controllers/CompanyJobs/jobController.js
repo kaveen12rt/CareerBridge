@@ -1,6 +1,7 @@
 import Job from "../../models/CompanyJobs/Job.js";
 import InterviewSlot from "../../models/CompanyJobs/InterviewSlot.js";
 import mongoose from "mongoose";
+import { analyzeJobPostQuality } from "../../utils/CompanyJobs/jobQualityAnalyzer.js";
 
 // Create sample jobs for testing
 const createSampleJobs = async (req, res) => {
@@ -195,8 +196,13 @@ const createSampleJobs = async (req, res) => {
       },
     ];
 
+    const sampleJobsWithQuality = sampleJobs.map((job) => ({
+      ...job,
+      qualityAnalysis: analyzeJobPostQuality(job),
+    }));
+
     await Job.deleteMany({});
-    const jobs = await Job.insertMany(sampleJobs);
+    const jobs = await Job.insertMany(sampleJobsWithQuality);
 
     res.json({ message: "Sample jobs created successfully", jobs });
   } catch (error) {
@@ -210,7 +216,61 @@ const createSampleJobs = async (req, res) => {
 // Get all jobs
 const getAllJobs = async (req, res) => {
   try {
-    const jobs = await Job.find().sort({ createdAt: -1 });
+    const {
+      search = "",
+      location = "",
+      department = "",
+      jobType = "",
+      sort = "recent",
+      urgent = "false",
+      status = "",
+    } = req.query;
+
+    const query = {};
+
+    if (search && String(search).trim()) {
+      const searchRegex = new RegExp(String(search).trim(), "i");
+      query.$or = [
+        { title: searchRegex },
+        { companyName: searchRegex },
+        { department: searchRegex },
+        { location: searchRegex },
+      ];
+    }
+
+    if (location && String(location).trim()) {
+      query.location = new RegExp(`^${String(location).trim()}$`, "i");
+    }
+
+    if (department && String(department).trim()) {
+      query.department = new RegExp(`^${String(department).trim()}$`, "i");
+    }
+
+    if (jobType && String(jobType).trim()) {
+      query.type = new RegExp(`^${String(jobType).trim()}$`, "i");
+    }
+
+    if (status && String(status).trim()) {
+      query.status = new RegExp(`^${String(status).trim()}$`, "i");
+    }
+
+    if (String(urgent).toLowerCase() === "true") {
+      const now = new Date();
+      now.setHours(0, 0, 0, 0);
+
+      const sevenDaysFromNow = new Date(now);
+      sevenDaysFromNow.setDate(sevenDaysFromNow.getDate() + 7);
+      sevenDaysFromNow.setHours(23, 59, 59, 999);
+
+      query.deadline = {
+        $gte: now,
+        $lte: sevenDaysFromNow,
+      };
+    }
+
+    const sortBy = String(sort).toLowerCase() === "oldest" ? { createdAt: 1 } : { createdAt: -1 };
+
+    const jobs = await Job.find(query).sort(sortBy);
     res.json(jobs);
   } catch (error) {
     res.status(500).json({
@@ -282,6 +342,7 @@ const createJob = async (req, res) => {
       deadline,
       image,
       companyId,
+      qualityAnalysis: analyzeJobPostQuality(req.body),
     });
 
     const savedJob = await job.save();
@@ -309,7 +370,17 @@ const updateJob = async (req, res) => {
       return res.status(404).json({ message: "Job not found" });
     }
 
-    const updatedJob = await Job.findByIdAndUpdate(id, req.body, {
+    const mergedPayload = {
+      ...job.toObject(),
+      ...req.body,
+    };
+
+    const updatedPayload = {
+      ...req.body,
+      qualityAnalysis: analyzeJobPostQuality(mergedPayload),
+    };
+
+    const updatedJob = await Job.findByIdAndUpdate(id, updatedPayload, {
       new: true,
       runValidators: true,
     });
