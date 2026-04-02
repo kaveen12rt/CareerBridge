@@ -1,15 +1,12 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeftIcon } from '@heroicons/react/24/outline';
-import CompanyJobsNavigation from '../components/CompanyJobs/CompanyJobsNavigation';
+import CompanyJobsNavigation from '../../components/CompanyJobs/CompanyJobsNavigation';
 import {
   CompanyDashboard,
   JobPostingForm,
-  InterviewSlots,
-  AllInterviewSlots,
-  JobManagement,
-  ApplicantsList
-} from './CompanyJobs';
+  JobManagement
+} from './index';
 
 const CompanyJobsMain = () => {
   const [currentPage, setCurrentPage] = useState('dashboard');
@@ -23,12 +20,6 @@ const CompanyJobsMain = () => {
         return <JobPostingForm />;
       case 'manage-jobs':
         return <JobManagement />;
-      case 'interview-slots':
-        return <InterviewSlots />;
-      case 'all-slots':
-        return <AllInterviewSlots />;
-      case 'applicants':
-        return <ApplicantsList />;
       default:
         return <CompanyDashboard onNavigate={setCurrentPage} />;
     }

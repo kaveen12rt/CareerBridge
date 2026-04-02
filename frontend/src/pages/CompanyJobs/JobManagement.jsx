@@ -1,5 +1,6 @@
-import { useState, useEffect } from 'react';
-import { PencilIcon, TrashIcon, EyeIcon, PauseIcon, PlayIcon } from '@heroicons/react/24/outline';
+import { useState, useEffect, useMemo } from 'react';
+import { PencilIcon, TrashIcon, EyeIcon, PauseIcon, PlayIcon, PlusIcon, XMarkIcon } from '@heroicons/react/24/outline';
+import { analyzeJobPostQuality } from './jobQualityAnalyzer';
 
 const JobManagement = () => {
   const [jobs, setJobs] = useState([]);
@@ -78,8 +79,21 @@ const JobManagement = () => {
   };
 
   const filteredJobs = jobs.filter(job => {
-    const matchesSearch = job.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         job.department.toLowerCase().includes(searchTerm.toLowerCase());
+    const term = searchTerm.trim().toLowerCase();
+    const title = String(job?.title || '').toLowerCase();
+    const department = String(job?.department || '').toLowerCase();
+    const companyName = String(job?.companyName || '').toLowerCase();
+    const location = String(job?.location || '').toLowerCase();
+    const type = String(job?.type || '').toLowerCase();
+
+    const matchesSearch =
+      !term ||
+      title.includes(term) ||
+      department.includes(term) ||
+      companyName.includes(term) ||
+      location.includes(term) ||
+      type.includes(term);
+
     const matchesStatus = statusFilter === 'all' || job.status === statusFilter;
     return matchesSearch && matchesStatus;
   });
@@ -95,6 +109,28 @@ const JobManagement = () => {
       default:
         return 'bg-gray-100 text-gray-800';
     }
+  };
+
+  const getCompanyInitials = (name) => {
+    const parts = String(name || 'Company').trim().split(' ').filter(Boolean);
+    const initials = parts.slice(0, 2).map((part) => part[0]?.toUpperCase() || '').join('');
+    return initials || 'CO';
+  };
+
+  const getQualityBadge = (score) => {
+    if (score >= 85) {
+      return 'bg-emerald-100 text-emerald-800';
+    }
+
+    if (score >= 70) {
+      return 'bg-blue-100 text-blue-800';
+    }
+
+    if (score >= 50) {
+      return 'bg-amber-100 text-amber-800';
+    }
+
+    return 'bg-rose-100 text-rose-800';
   };
 
   return (
@@ -117,7 +153,7 @@ const JobManagement = () => {
                 type="text"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                placeholder="Search by title or department..."
+                placeholder="Search by title, company, department, location, or type..."
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
@@ -169,6 +205,9 @@ const JobManagement = () => {
                     Applications
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Quality
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Status
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -178,13 +217,30 @@ const JobManagement = () => {
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
                 {filteredJobs.map((job) => (
+                  (() => {
+                    const quality = analyzeJobPostQuality(job);
+                    return (
                   <tr key={job._id} className="hover:bg-gray-50">
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div>
-                        <div className="text-sm font-medium text-gray-900">{job.title}</div>
-                        <div className="text-sm text-gray-500">{job.department}</div>
-                        <div className="text-xs text-gray-400">
-                          Posted: {new Date(job.createdAt).toLocaleDateString()}
+                      <div className="flex items-start gap-3">
+                        <div className="w-10 h-10 rounded-md overflow-hidden border border-gray-200 bg-gray-50 flex items-center justify-center text-xs font-semibold text-gray-600 flex-shrink-0">
+                          {job.companyImage ? (
+                            <img
+                              src={job.companyImage}
+                              alt={job.companyName || 'Company'}
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            getCompanyInitials(job.companyName)
+                          )}
+                        </div>
+                        <div>
+                          <div className="text-sm font-medium text-gray-900">{job.title}</div>
+                          <div className="text-sm text-gray-500">{job.companyName || 'N/A'}</div>
+                          <div className="text-sm text-gray-500">{job.department}</div>
+                          <div className="text-xs text-gray-400">
+                            Posted: {new Date(job.createdAt).toLocaleDateString()}
+                          </div>
                         </div>
                       </div>
                     </td>
@@ -194,7 +250,14 @@ const JobManagement = () => {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm text-gray-900">{job.applicationsCount || 0} applications</div>
-                      <div className="text-sm text-gray-500">{job.interviewsCount || 0} interviews</div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="flex flex-col gap-1">
+                        <span className={`inline-flex w-fit px-2 py-1 text-xs font-semibold rounded-full ${getQualityBadge(quality.score)}`}>
+                          {quality.score}/100
+                        </span>
+                        <span className="text-xs text-gray-500">{quality.tier}</span>
+                      </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(job.status)}`}>
@@ -232,6 +295,8 @@ const JobManagement = () => {
                       </div>
                     </td>
                   </tr>
+                    );
+                  })()
                 ))}
               </tbody>
             </table>
@@ -253,7 +318,7 @@ const JobManagement = () => {
         {/* Edit Job Modal */}
         {editingJob && (
           <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-            <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+            <div className="relative top-10 mx-auto p-5 border max-w-4xl shadow-lg rounded-md bg-white mb-10">
               <div className="mt-3">
                 <h3 className="text-lg font-medium text-gray-900 mb-4">Edit Job</h3>
                 <JobEditForm
@@ -274,6 +339,8 @@ const JobManagement = () => {
 // Job Edit Form Component
 const JobEditForm = ({ job, onSave, onCancel, loading }) => {
   const [formData, setFormData] = useState({
+    companyName: job.companyName || '',
+    companyImage: job.companyImage || '',
     title: job.title || '',
     department: job.department || '',
     location: job.location || '',
@@ -281,11 +348,48 @@ const JobEditForm = ({ job, onSave, onCancel, loading }) => {
     salaryMin: job.salaryMin || '',
     salaryMax: job.salaryMax || '',
     description: job.description || '',
+    requirements: job.requirements || [''],
+    skills: job.skills || [''],
+    experience: job.experience || '',
+    deadline: job.deadline ? new Date(job.deadline).toISOString().split('T')[0] : '',
     status: job.status || 'active'
   });
+  const qualityAnalysis = useMemo(() => analyzeJobPostQuality(formData), [formData]);
+
+  const getQualityTheme = (score) => {
+    if (score >= 85) {
+      return 'bg-emerald-50 border-emerald-200 text-emerald-700';
+    }
+
+    if (score >= 70) {
+      return 'bg-blue-50 border-blue-200 text-blue-700';
+    }
+
+    if (score >= 50) {
+      return 'bg-amber-50 border-amber-200 text-amber-700';
+    }
+
+    return 'bg-rose-50 border-rose-200 text-rose-700';
+  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
+
+    if (qualityAnalysis.criticalIssues.length > 0) {
+      alert(`Please fix these issues before saving:\n- ${qualityAnalysis.criticalIssues.join('\n- ')}`);
+      return;
+    }
+
+    if (qualityAnalysis.score < 70) {
+      const shouldContinue = confirm(
+        `Job quality score is ${qualityAnalysis.score}/100 (${qualityAnalysis.tier}). Save anyway?`
+      );
+
+      if (!shouldContinue) {
+        return;
+      }
+    }
+
     onSave(formData);
   };
 
@@ -297,59 +401,282 @@ const JobEditForm = ({ job, onSave, onCancel, loading }) => {
     }));
   };
 
+  const handleFileChange = (e, field) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setFormData((prev) => ({
+        ...prev,
+        [field]: reader.result,
+      }));
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleArrayChange = (index, value, field) => {
+    const newArray = [...formData[field]];
+    newArray[index] = value;
+    setFormData(prev => ({
+      ...prev,
+      [field]: newArray
+    }));
+  };
+
+  const addArrayField = (field) => {
+    setFormData(prev => ({
+      ...prev,
+      [field]: [...prev[field], '']
+    }));
+  };
+
+  const removeArrayField = (index, field) => {
+    if (formData[field].length > 1) {
+      const newArray = formData[field].filter((_, i) => i !== index);
+      setFormData(prev => ({
+        ...prev,
+        [field]: newArray
+      }));
+    }
+  };
+
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <form onSubmit={handleSubmit} className="space-y-4 max-h-[70vh] overflow-y-auto pr-2">
+      <div className={`border rounded-lg p-4 ${getQualityTheme(qualityAnalysis.score)}`}>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <h4 className="text-base font-semibold">AI Job Quality Analyzer</h4>
+            <p className="text-sm opacity-90">Review quality before updating this vacancy.</p>
+          </div>
+          <div className="text-right">
+            <p className="text-xs uppercase tracking-wide font-semibold">Score</p>
+            <p className="text-2xl font-bold">{qualityAnalysis.score}/100</p>
+            <p className="text-xs font-semibold uppercase tracking-wide">{qualityAnalysis.tier}</p>
+          </div>
+        </div>
+
+        {qualityAnalysis.warnings.length > 0 && (
+          <ul className="mt-3 text-sm list-disc list-inside space-y-1">
+            {qualityAnalysis.warnings.slice(0, 3).map((warning, index) => (
+              <li key={`${warning}-${index}`}>{warning}</li>
+            ))}
+          </ul>
+        )}
+      </div>
+
+      {/* Basic Information */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Company Name *</label>
+          <input
+            type="text"
+            name="companyName"
+            value={formData.companyName}
+            onChange={handleChange}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            required
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Job Title *</label>
+          <input
+            type="text"
+            name="title"
+            value={formData.title}
+            onChange={handleChange}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            required
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Department *</label>
+          <input
+            type="text"
+            name="department"
+            value={formData.department}
+            onChange={handleChange}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            required
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Location *</label>
+          <input
+            type="text"
+            name="location"
+            value={formData.location}
+            onChange={handleChange}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            required
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Job Type *</label>
+          <select
+            name="type"
+            value={formData.type}
+            onChange={handleChange}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            <option value="full-time">Full-time</option>
+            <option value="part-time">Part-time</option>
+            <option value="contract">Contract</option>
+            <option value="internship">Internship</option>
+          </select>
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Salary Range (Min)</label>
+          <input
+            type="number"
+            name="salaryMin"
+            value={formData.salaryMin}
+            onChange={handleChange}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            placeholder="50000"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Salary Range (Max)</label>
+          <input
+            type="number"
+            name="salaryMax"
+            value={formData.salaryMax}
+            onChange={handleChange}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            placeholder="80000"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Experience Required</label>
+          <input
+            type="text"
+            name="experience"
+            value={formData.experience}
+            onChange={handleChange}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            placeholder="e.g., 2-4 years"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Application Deadline</label>
+          <input
+            type="date"
+            name="deadline"
+            value={formData.deadline}
+            onChange={handleChange}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Company Photo</label>
+          <input
+            type="file"
+            accept="image/*"
+            onChange={(e) => handleFileChange(e, 'companyImage')}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+          {formData.companyImage && (
+            <img src={formData.companyImage} alt="Company" className="mt-2 h-16 w-16 rounded-md object-cover" />
+          )}
+        </div>
+
+      </div>
+
+      {/* Description */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">Job Title</label>
-        <input
-          type="text"
-          name="title"
-          value={formData.title}
+        <label className="block text-sm font-medium text-gray-700 mb-1">Job Description *</label>
+        <textarea
+          name="description"
+          required
+          rows="4"
+          value={formData.description}
           onChange={handleChange}
           className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-          required
+          placeholder="Describe the job role and responsibilities..."
         />
       </div>
 
+      {/* Requirements */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">Department</label>
-        <input
-          type="text"
-          name="department"
-          value={formData.department}
-          onChange={handleChange}
-          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-          required
-        />
+        <label className="block text-sm font-medium text-gray-700 mb-2">Requirements</label>
+        <div className="space-y-2">
+          {formData.requirements.map((req, index) => (
+            <div key={index} className="flex items-center gap-2">
+              <input
+                type="text"
+                value={req}
+                onChange={(e) => handleArrayChange(index, e.target.value, 'requirements')}
+                className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="Add a requirement..."
+              />
+              {formData.requirements.length > 1 && (
+                <button
+                  type="button"
+                  onClick={() => removeArrayField(index, 'requirements')}
+                  className="p-2 text-red-600 hover:bg-red-50 rounded-md"
+                >
+                  <XMarkIcon className="h-4 w-4" />
+                </button>
+              )}
+            </div>
+          ))}
+          <button
+            type="button"
+            onClick={() => addArrayField('requirements')}
+            className="flex items-center text-blue-600 hover:text-blue-700"
+          >
+            <PlusIcon className="h-4 w-4 mr-1" />
+            Add Requirement
+          </button>
+        </div>
       </div>
 
+      {/* Skills */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">Location</label>
-        <input
-          type="text"
-          name="location"
-          value={formData.location}
-          onChange={handleChange}
-          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-          required
-        />
+        <label className="block text-sm font-medium text-gray-700 mb-2">Required Skills</label>
+        <div className="space-y-2">
+          {formData.skills.map((skill, index) => (
+            <div key={index} className="flex items-center gap-2">
+              <input
+                type="text"
+                value={skill}
+                onChange={(e) => handleArrayChange(index, e.target.value, 'skills')}
+                className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="Add a skill..."
+              />
+              {formData.skills.length > 1 && (
+                <button
+                  type="button"
+                  onClick={() => removeArrayField(index, 'skills')}
+                  className="p-2 text-red-600 hover:bg-red-50 rounded-md"
+                >
+                  <XMarkIcon className="h-4 w-4" />
+                </button>
+              )}
+            </div>
+          ))}
+          <button
+            type="button"
+            onClick={() => addArrayField('skills')}
+            className="flex items-center text-blue-600 hover:text-blue-700"
+          >
+            <PlusIcon className="h-4 w-4 mr-1" />
+            Add Skill
+          </button>
+        </div>
       </div>
 
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">Job Type</label>
-        <select
-          name="type"
-          value={formData.type}
-          onChange={handleChange}
-          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-        >
-          <option value="full-time">Full-time</option>
-          <option value="part-time">Part-time</option>
-          <option value="contract">Contract</option>
-          <option value="internship">Internship</option>
-        </select>
-      </div>
-
+      {/* Status */}
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
         <select
@@ -364,7 +691,8 @@ const JobEditForm = ({ job, onSave, onCancel, loading }) => {
         </select>
       </div>
 
-      <div className="flex justify-end space-x-2 pt-4">
+      {/* Submit Buttons */}
+      <div className="flex justify-end space-x-2 pt-4 border-t">
         <button
           type="button"
           onClick={onCancel}
