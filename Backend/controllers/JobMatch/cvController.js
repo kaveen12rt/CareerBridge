@@ -1,7 +1,7 @@
-const mongoose = require('mongoose');
-const CVTemplate = require('../../models/JobMatch/CVTemplate');
+import mongoose from "mongoose";
+import CVTemplate from "../../models/JobMatch/CVTemplate.js";
 
-const getTemplates = async (req, res) => {
+export const getTemplates = async (req, res) => {
   try {
     const { studentId } = req.params;
     const templates = await CVTemplate.find({ studentId }).sort({ updatedAt: -1 });
@@ -11,10 +11,30 @@ const getTemplates = async (req, res) => {
   }
 };
 
-const createTemplate = async (req, res) => {
+export const getTemplate = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ message: 'Invalid template id' });
+    }
+
+    const template = await CVTemplate.findById(id);
+
+    if (!template) {
+      return res.status(404).json({ message: 'Template not found' });
+    }
+
+    res.json(template);
+  } catch (error) {
+    res.status(500).json({ message: 'Error fetching CV template', error: error.message });
+  }
+};
+
+export const createTemplate = async (req, res) => {
   try {
     const { studentId } = req.params;
-    const { name, summary = '', sections = [], isDefault = false } = req.body;
+    const { name, summary = '', sections = [], isDefault = false, templateId = '' } = req.body;
 
     if (!name) {
       return res.status(400).json({ message: 'Template name is required' });
@@ -22,6 +42,7 @@ const createTemplate = async (req, res) => {
 
     const template = await CVTemplate.create({
       studentId,
+      templateId,
       name,
       summary,
       sections,
@@ -34,7 +55,7 @@ const createTemplate = async (req, res) => {
   }
 };
 
-const updateTemplate = async (req, res) => {
+export const updateTemplate = async (req, res) => {
   try {
     const { id } = req.params;
 
@@ -57,7 +78,7 @@ const updateTemplate = async (req, res) => {
   }
 };
 
-const deleteTemplate = async (req, res) => {
+export const deleteTemplate = async (req, res) => {
   try {
     const { id } = req.params;
 
@@ -77,7 +98,7 @@ const deleteTemplate = async (req, res) => {
   }
 };
 
-const previewCV = async (req, res) => {
+export const previewCV = async (req, res) => {
   try {
     const { id } = req.params;
 
@@ -105,10 +126,3 @@ const previewCV = async (req, res) => {
   }
 };
 
-module.exports = {
-  getTemplates,
-  createTemplate,
-  updateTemplate,
-  deleteTemplate,
-  previewCV
-};

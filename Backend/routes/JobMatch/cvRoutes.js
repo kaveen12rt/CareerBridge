@@ -1,15 +1,20 @@
-const express = require('express');
-const router = express.Router();
-const {
+import express from "express";
+import {
+  getTemplate,
   getTemplates,
   createTemplate,
   updateTemplate,
   deleteTemplate,
-  previewCV
-} = require('../../controllers/JobMatch/cvController');
+  previewCV,
+} from "../../controllers/JobMatch/cvController.js";
+
+const router = express.Router();
 
 // GET /api/job-match/cv/:studentId
 router.get('/cv/:studentId', getTemplates);
+
+// GET /api/job-match/cv/template/:id
+router.get('/cv/template/:id', getTemplate);
 
 // POST /api/job-match/cv/:studentId
 router.post('/cv/:studentId', createTemplate);
@@ -23,4 +28,4 @@ router.delete('/cv/template/:id', deleteTemplate);
 // GET /api/job-match/cv/preview/:id
 router.get('/cv/preview/:id', previewCV);
 
-module.exports = router;
+export default router;

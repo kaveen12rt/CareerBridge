@@ -1,8 +1,11 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { jsPDF } from 'jspdf';
 
 const CVGenerator = () => {
   const sampleProfileImage = '/images/cv-example-man.svg';
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
 
   const sampleData = {
     fullName: 'Lorna Alvarado',
@@ -174,8 +177,117 @@ const CVGenerator = () => {
   const [selectedTemplate, setSelectedTemplate] = useState(null);
   const [inspectTemplateId, setInspectTemplateId] = useState(null);
   const [formErrors, setFormErrors] = useState({});
+  const [cvTitle, setCvTitle] = useState('');
+  const [currentUserId, setCurrentUserId] = useState('');
+  const [saveMessage, setSaveMessage] = useState('');
+  const [saveError, setSaveError] = useState('');
+  const [saving, setSaving] = useState(false);
+  const [editingTemplateId, setEditingTemplateId] = useState('');
+  const [loadingTemplate, setLoadingTemplate] = useState(false);
 
   const [preview, setPreview] = useState(false);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const loadUser = async () => {
+      try {
+        const res = await fetch('http://localhost:5000/api/auth/check-auth', {
+          credentials: 'include'
+        });
+        const data = await res.json();
+        const userId = data?.data?.user?.id;
+        if (res.ok && userId && isMounted) {
+          setCurrentUserId(userId);
+        }
+      } catch {
+        if (isMounted) {
+          setCurrentUserId('');
+        }
+      }
+    };
+
+    loadUser();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    let isMounted = true;
+    const templateId = searchParams.get('templateId');
+
+    const loadTemplate = async () => {
+      if (!templateId) {
+        if (isMounted) {
+          setEditingTemplateId('');
+        }
+        return;
+      }
+
+      try {
+        setLoadingTemplate(true);
+        const res = await fetch(`http://localhost:5000/api/job-match/cv/template/${templateId}`, {
+          credentials: 'include'
+        });
+        const data = await res.json();
+
+        if (!res.ok) {
+          throw new Error(data?.message || 'Failed to load saved CV.');
+        }
+
+        if (!isMounted) return;
+
+        const sectionMap = (Array.isArray(data?.sections) ? data.sections : []).reduce((acc, section) => {
+          if (section?.title) {
+            acc[section.title] = section.content || '';
+          }
+          return acc;
+        }, {});
+
+        const profileLines = String(sectionMap.Profile || '').split(/\r?\n/).filter(Boolean);
+        const contactLines = String(sectionMap.Contact || '').split(/\r?\n/).filter(Boolean);
+
+        setForm((prev) => ({
+          ...prev,
+          fullName: profileLines[0] || '',
+          role: profileLines[1] || '',
+          email: contactLines[0] || '',
+          phone: contactLines[1] || '',
+          address: contactLines[2] || '',
+          summary: data?.summary || '',
+          education: sectionMap.Education || '',
+          skills: sectionMap.Skills || '',
+          experience: sectionMap['Work Experience'] || '',
+          languages: sectionMap.Languages || '',
+          references: sectionMap.References || '',
+          projects: sectionMap.Projects || ''
+        }));
+
+        setCvTitle(data?.name || '');
+        setSelectedTemplate(data?.templateId || 'minimal-white');
+        setEditingTemplateId(data?._id || templateId);
+        setPreview(false);
+        setSaveMessage('');
+        setSaveError('');
+      } catch (error) {
+        if (isMounted) {
+          setSaveError(error.message || 'Failed to load saved CV.');
+        }
+      } finally {
+        if (isMounted) {
+          setLoadingTemplate(false);
+        }
+      }
+    };
+
+    loadTemplate();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [searchParams]);
 
   const getFieldClassName = (fieldKey) => {
     const hasError = Boolean(formErrors[fieldKey]);
@@ -233,6 +345,129 @@ const CVGenerator = () => {
       delete next[key];
       return next;
     });
+    setSaveMessage('');
+    setSaveError('');
+  };
+
+  const buildTemplateName = () => {
+    const explicitTitle = String(cvTitle || '').trim();
+    if (explicitTitle) return explicitTitle;
+
+    const templateName = templates.find((t) => t.id === selectedTemplate)?.name || 'Template';
+    const safeName = String(form.fullName || 'My CV').trim() || 'My CV';
+    return `${safeName} - ${templateName}`;
+  };
+
+  const buildSections = () => {
+    const sections = [];
+
+    const addSection = (title, value) => {
+      const content = String(value || '').trim();
+      if (!content) return;
+      sections.push({ title, content });
+    };
+
+    addSection('Profile', [form.fullName, form.role].filter(Boolean).join('\n'));
+    addSection('Contact', [form.email, form.phone, form.address].filter(Boolean).join('\n'));
+    addSection('Education', form.education);
+    addSection('Skills', form.skills);
+    addSection('Work Experience', form.experience);
+    addSection('Languages', form.languages);
+    addSection('References', form.references);
+    addSection('Projects', form.projects);
+
+    return sections;
+  };
+
+  const saveTemplate = async () => {
+    setSaveMessage('');
+    setSaveError('');
+
+    if (!currentUserId) {
+      setSaveError('Please sign in to save your CV.');
+      return;
+    }
+
+    if (!selectedTemplate) {
+      setSaveError('Select a template before saving.');
+      return;
+    }
+
+    if (!validateForm()) {
+      setSaveError('Please fix the highlighted fields before saving.');
+      return;
+    }
+
+    try {
+      setSaving(true);
+
+      const payload = {
+        name: buildTemplateName(),
+        summary: String(form.summary || ''),
+        sections: buildSections(),
+        isDefault: false,
+        templateId: selectedTemplate || ''
+      };
+
+      const isEditMode = Boolean(editingTemplateId);
+      const url = isEditMode
+        ? `http://localhost:5000/api/job-match/cv/template/${editingTemplateId}`
+        : `http://localhost:5000/api/job-match/cv/${currentUserId}`;
+      const method = isEditMode ? 'PUT' : 'POST';
+
+      const res = await fetch(url, {
+        method,
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        credentials: 'include',
+        body: JSON.stringify(payload)
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        setSaveError(data?.message || 'Failed to save CV.');
+        return;
+      }
+
+      setSaveMessage(isEditMode ? 'CV updated successfully.' : 'CV saved successfully. You can create and save more CVs anytime.');
+      if (!isEditMode) {
+        setCvTitle('');
+      }
+    } catch (error) {
+      setSaveError('Server error while saving the CV. Please try again.');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const deleteTemplate = async () => {
+    if (!editingTemplateId) return;
+
+    const confirmed = window.confirm('Delete this saved CV? This cannot be undone.');
+    if (!confirmed) return;
+
+    try {
+      setSaving(true);
+      const res = await fetch(`http://localhost:5000/api/job-match/cv/template/${editingTemplateId}`, {
+        method: 'DELETE',
+        credentials: 'include'
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        setSaveError(data?.message || 'Failed to delete CV.');
+        return;
+      }
+
+      navigate('/cv-saved');
+    } catch (error) {
+      setSaveError('Server error while deleting the CV. Please try again.');
+    } finally {
+      setSaving(false);
+    }
   };
 
   const useExampleDetails = (options = { openPreview: true }) => {
@@ -920,7 +1155,16 @@ const CVGenerator = () => {
       <div className="max-w-7xl mx-auto px-4">
         {!selectedTemplate ? (
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">Choose a CV Template</h1>
+            <div className="flex flex-wrap items-start justify-between gap-3 mb-2">
+              <h1 className="text-3xl font-bold text-gray-900">Choose a CV Template</h1>
+              <button
+                type="button"
+                onClick={() => navigate('/cv-saved')}
+                className="text-sm px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50"
+              >
+                View Saved CVs
+              </button>
+            </div>
             <p className="text-gray-600 mb-6">
               Select a template to continue. After choosing, you can fill your details and download as PDF.
             </p>
@@ -1013,6 +1257,22 @@ const CVGenerator = () => {
                 </button>
               </div>
 
+              {loadingTemplate ? <p className="text-sm text-gray-500">Loading saved CV...</p> : null}
+
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-1">CV Title (optional)</label>
+                <input
+                  type="text"
+                  value={cvTitle}
+                  onChange={(e) => setCvTitle(e.target.value)}
+                  placeholder="e.g. Marketing CV - April 2026"
+                  className="w-full border border-gray-300 rounded px-3 py-2"
+                />
+              </div>
+
+              {saveMessage ? <p className="text-sm text-emerald-600">{saveMessage}</p> : null}
+              {saveError ? <p className="text-sm text-red-600">{saveError}</p> : null}
+
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-1">Full Name</label>
                 <input type="text" value={form.fullName} onChange={(e) => updateField('fullName', e.target.value)} placeholder="Enter full name" className={getFieldClassName('fullName')} />
@@ -1089,6 +1349,26 @@ const CVGenerator = () => {
                 >
                   Generate CV Preview
                 </button>
+
+                <button
+                  type="button"
+                  onClick={saveTemplate}
+                  disabled={saving}
+                  className="bg-emerald-600 text-white px-4 py-2 rounded-lg hover:bg-emerald-700 disabled:opacity-70"
+                >
+                  {saving ? 'Saving...' : editingTemplateId ? 'Update CV' : 'Save CV'}
+                </button>
+
+                {editingTemplateId ? (
+                  <button
+                    type="button"
+                    onClick={deleteTemplate}
+                    disabled={saving}
+                    className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 disabled:opacity-70"
+                  >
+                    Delete CV
+                  </button>
+                ) : null}
 
                 {preview ? (
                   <button
