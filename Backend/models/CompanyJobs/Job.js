@@ -80,27 +80,9 @@ const jobSchema = new mongoose.Schema(
       type: Number,
       default: 0,
     },
-    qualityAnalysis: {
-      score: {
-        type: Number,
-        default: 0,
-      },
-      tier: {
-        type: String,
-        default: "Needs Work",
-      },
-      warnings: {
-        type: [String],
-        default: [],
-      },
-      suggestions: {
-        type: [String],
-        default: [],
-      },
-      criticalIssues: {
-        type: [String],
-        default: [],
-      },
+    interviewsCount: {
+      type: Number,
+      default: 0,
     },
   },
   {

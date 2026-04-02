@@ -26,6 +26,8 @@ import ContactUsPage from "./pages/ContactUsPage";
 import JobSearch from "./pages/JobMatch/JobSearch";
 import SmartMatching from "./pages/JobMatch/SmartMatching";
 import CVGenerator from "./pages/JobMatch/CVGenerator";
+import MyApplications from "./pages/JobMatch/MyApplications";
+import ApplicationsDashboard from "./pages/JobMatch/ApplicationsDashboard";
 
 function AdminDashboard() {
   const [apiStatus, setApiStatus] = useState("Checking...");
@@ -129,14 +131,19 @@ function AdminDashboard() {
             </p>
           </div>
 
-          <div className="bg-white rounded-xl shadow p-6 border-l-4 border-pink-500 cursor-not-allowed opacity-75">
+          <div
+            onClick={() => navigate('/admin/applications')}
+            className="bg-white rounded-xl shadow p-6 border-l-4 border-pink-500 cursor-pointer hover:shadow-lg hover:bg-pink-50 transition-all duration-200 transform hover:scale-105"
+          >
             <h3 className="text-lg font-bold text-pink-600 mb-1">
               Applications
             </h3>
             <p className="text-gray-500 text-sm">
               Member 4 — Applications + Interview Booking + Payment
             </p>
-            <p className="text-xs text-gray-400 mt-2">Coming Soon...</p>
+            <p className="text-xs text-pink-500 mt-2 font-semibold">
+              ✨ Click to Enter →
+            </p>
           </div>
         </div>
       </div>
@@ -303,6 +310,9 @@ function UserPortal() {
             >
               CV Generator
             </Link>
+            <Link to="/my-applications" className="text-gray-600 hover:text-indigo-600">
+              My Applications
+            </Link>
             <Link to="/feedback" className="text-gray-600 hover:text-indigo-600">
               Feedback
             </Link>
@@ -374,6 +384,8 @@ function AppContent() {
         <Route path="/signup" element={<SignUp />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/reset-password/:token" element={<ResetPassword />} />
+        <Route path="/my-applications" element={<MyApplications />} />
+        <Route path="/admin/applications" element={<ApplicationsDashboard />} />
         <Route path="/feedback" element={<FeedbackPage />} />
         <Route path="/admin" element={<AdminDashboard />} />
         <Route path="/admin/company" element={<CompanyJobsMain />} />
