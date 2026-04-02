@@ -7,6 +7,8 @@ function ProfilePage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [user, setUser] = useState(null);
+  const [savedCVs, setSavedCVs] = useState([]);
+  const [loadingCVs, setLoadingCVs] = useState(false);
 
   useEffect(() => {
     const loadProfile = async () => {
@@ -23,6 +25,25 @@ function ProfilePage() {
         }
 
         setUser(data.data.user);
+
+        // Load saved CVs
+        if (data.data.user._id) {
+          setLoadingCVs(true);
+          try {
+            const cvRes = await fetch(
+              `http://localhost:5000/api/job-match/cv/${data.data.user._id}`,
+              { credentials: "include" }
+            );
+            const cvData = await cvRes.json();
+            if (cvData?.templates) {
+              setSavedCVs(cvData.templates);
+            }
+          } catch (cvError) {
+            console.error("Error loading saved CVs:", cvError);
+          } finally {
+            setLoadingCVs(false);
+          }
+        }
       } catch {
         setError("Failed to load profile.");
       } finally {
@@ -32,6 +53,29 @@ function ProfilePage() {
 
     loadProfile();
   }, [navigate]);
+
+  const deleteCV = async (cvId) => {
+    if (!window.confirm("Are you sure you want to delete this CV?")) return;
+
+    try {
+      const res = await fetch(
+        `http://localhost:5000/api/job-match/cv/template/${cvId}`,
+        {
+          method: "DELETE",
+          credentials: "include",
+        }
+      );
+
+      if (res.ok) {
+        setSavedCVs(savedCVs.filter((cv) => cv._id !== cvId));
+      } else {
+        alert("Failed to delete CV");
+      }
+    } catch (error) {
+      console.error("Error deleting CV:", error);
+      alert("Error deleting CV");
+    }
+  };
 
   if (loading) {
     return (
@@ -155,6 +199,62 @@ function ProfilePage() {
                   <p className="text-gray-500">No resume link added yet.</p>
                 )}
               </div>
+            </div>
+
+            <div className="bg-white rounded-2xl shadow-lg p-8">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-2xl font-bold text-slate-800">Generated CVs</h2>
+                <Link
+                  to="/job-match/cv-generator"
+                  className="text-indigo-600 hover:text-indigo-800 text-sm font-semibold"
+                >
+                  Create New
+                </Link>
+              </div>
+
+              {loadingCVs ? (
+                <p className="text-gray-500">Loading your CVs...</p>
+              ) : savedCVs.length === 0 ? (
+                <div className="bg-slate-50 rounded-xl p-5 border border-slate-100 text-center">
+                  <p className="text-gray-500 mb-3">No CVs created yet.</p>
+                  <Link
+                    to="/job-match/cv-generator"
+                    className="text-indigo-600 hover:text-indigo-800 font-medium"
+                  >
+                    Create your first CV
+                  </Link>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {savedCVs.map((cv) => (
+                    <div
+                      key={cv._id}
+                      className="flex items-center justify-between bg-slate-50 rounded-xl p-4 border border-slate-100 hover:border-slate-200 transition"
+                    >
+                      <div className="flex-1">
+                        <h3 className="font-semibold text-slate-800">{cv.name}</h3>
+                        <p className="text-xs text-gray-500">
+                          Saved on {new Date(cv.createdAt).toLocaleDateString()}
+                        </p>
+                      </div>
+                      <div className="flex gap-2">
+                        <Link
+                          to="/job-match/cv-generator"
+                          className="bg-indigo-600 text-white px-3 py-1.5 rounded text-xs font-medium hover:bg-indigo-700 transition"
+                        >
+                          Edit
+                        </Link>
+                        <button
+                          onClick={() => deleteCV(cv._id)}
+                          className="bg-red-600 text-white px-3 py-1.5 rounded text-xs font-medium hover:bg-red-700 transition"
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
 
