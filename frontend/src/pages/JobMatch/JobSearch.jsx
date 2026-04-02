@@ -36,9 +36,34 @@ const getLogoFallback = (companyName) => {
 const JobSearch = () => {
   const navigate = useNavigate();
   const [jobs, setJobs] = useState([]);
+  const [allActiveJobs, setAllActiveJobs] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [searchText, setSearchText] = useState('');
+  const [locationFilter, setLocationFilter] = useState('all');
+  const [departmentFilter, setDepartmentFilter] = useState('all');
+  const [jobTypeFilter, setJobTypeFilter] = useState('all');
+  const [sortBy, setSortBy] = useState('recent');
+  const [urgentOnly, setUrgentOnly] = useState(false);
+
+  useEffect(() => {
+    const fetchFilterOptions = async () => {
+      try {
+        const response = await fetch('http://localhost:5000/api/jobs?status=active');
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.message || 'Failed to fetch jobs');
+        }
+
+        setAllActiveJobs(Array.isArray(data) ? data : []);
+      } catch {
+        setAllActiveJobs([]);
+      }
+    };
+
+    fetchFilterOptions();
+  }, []);
 
   useEffect(() => {
     const fetchJobs = async () => {
@@ -46,14 +71,24 @@ const JobSearch = () => {
       setError('');
 
       try {
-        const response = await fetch('http://localhost:5000/api/jobs');
+        const params = new URLSearchParams();
+        params.append('status', 'active');
+
+        if (searchText.trim()) params.append('search', searchText.trim());
+        if (locationFilter !== 'all') params.append('location', locationFilter);
+        if (departmentFilter !== 'all') params.append('department', departmentFilter);
+        if (jobTypeFilter !== 'all') params.append('jobType', jobTypeFilter);
+        params.append('sort', sortBy);
+        if (urgentOnly) params.append('urgent', 'true');
+
+        const response = await fetch(`http://localhost:5000/api/jobs?${params.toString()}`);
         const data = await response.json();
 
         if (!response.ok) {
           throw new Error(data.message || 'Failed to fetch jobs');
         }
 
-        setJobs((data || []).filter((job) => job.status === 'active'));
+        setJobs(Array.isArray(data) ? data : []);
       } catch (err) {
         setError(err.message || 'Something went wrong');
       } finally {
@@ -62,28 +97,19 @@ const JobSearch = () => {
     };
 
     fetchJobs();
-  }, []);
+  }, [searchText, locationFilter, departmentFilter, jobTypeFilter, sortBy, urgentOnly]);
 
-  const filteredJobs = useMemo(() => {
-    const text = searchText.trim().toLowerCase();
-    if (!text) return jobs;
+  const locationOptions = useMemo(() => {
+    return [...new Set(allActiveJobs.map((job) => String(job?.location || '').trim()).filter(Boolean))].sort();
+  }, [allActiveJobs]);
 
-    return jobs.filter((job) => {
-      const title = String(job.title || '').toLowerCase();
-      const companyName = String(job.companyName || '').toLowerCase();
-      const department = String(job.department || '').toLowerCase();
-      const location = String(job.location || '').toLowerCase();
-      const description = String(job.description || '').toLowerCase();
+  const departmentOptions = useMemo(() => {
+    return [...new Set(allActiveJobs.map((job) => String(job?.department || '').trim()).filter(Boolean))].sort();
+  }, [allActiveJobs]);
 
-      return (
-        title.includes(text) ||
-        companyName.includes(text) ||
-        department.includes(text) ||
-        location.includes(text) ||
-        description.includes(text)
-      );
-    });
-  }, [jobs, searchText]);
+  const jobTypeOptions = useMemo(() => {
+    return [...new Set(allActiveJobs.map((job) => String(job?.type || '').trim()).filter(Boolean))].sort();
+  }, [allActiveJobs]);
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
@@ -98,7 +124,7 @@ const JobSearch = () => {
 
         <h1 className="text-3xl font-bold text-gray-900 mb-6">Job Search</h1>
 
-        <div className="bg-white rounded-xl shadow p-4 mb-6">
+        <div className="bg-white rounded-xl shadow p-4 mb-6 space-y-4">
           <input
             type="text"
             className="w-full border border-gray-300 rounded-lg px-4 py-3"
@@ -106,6 +132,77 @@ const JobSearch = () => {
             value={searchText}
             onChange={(e) => setSearchText(e.target.value)}
           />
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-3">
+            <select
+              value={locationFilter}
+              onChange={(e) => setLocationFilter(e.target.value)}
+              className="border border-gray-300 rounded-lg px-3 py-2 text-gray-700"
+            >
+              <option value="all">All Locations</option>
+              {locationOptions.map((location) => (
+                <option key={`location-${location}`} value={location}>{location}</option>
+              ))}
+            </select>
+
+            <select
+              value={departmentFilter}
+              onChange={(e) => setDepartmentFilter(e.target.value)}
+              className="border border-gray-300 rounded-lg px-3 py-2 text-gray-700"
+            >
+              <option value="all">All Departments</option>
+              {departmentOptions.map((department) => (
+                <option key={`department-${department}`} value={department}>{department}</option>
+              ))}
+            </select>
+
+            <select
+              value={jobTypeFilter}
+              onChange={(e) => setJobTypeFilter(e.target.value)}
+              className="border border-gray-300 rounded-lg px-3 py-2 text-gray-700"
+            >
+              <option value="all">All Job Types</option>
+              {jobTypeOptions.map((type) => (
+                <option key={`type-${type}`} value={type}>{type}</option>
+              ))}
+            </select>
+
+            <select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value)}
+              className="border border-gray-300 rounded-lg px-3 py-2 text-gray-700"
+            >
+              <option value="recent">Recently Added</option>
+              <option value="oldest">Oldest Posts</option>
+            </select>
+
+            <label className="inline-flex items-center gap-2 border border-gray-300 rounded-lg px-3 py-2 text-gray-700">
+              <input
+                type="checkbox"
+                checked={urgentOnly}
+                onChange={(e) => setUrgentOnly(e.target.checked)}
+              />
+              Urgent only
+            </label>
+          </div>
+
+          <div className="flex items-center justify-between text-sm text-gray-600">
+            <span>{jobs.length} job{jobs.length === 1 ? '' : 's'} found</span>
+            <button
+              type="button"
+              onClick={() => {
+                setSearchText('');
+                setLocationFilter('all');
+                setDepartmentFilter('all');
+                setJobTypeFilter('all');
+                setSortBy('recent');
+                setUrgentOnly(false);
+              }}
+              className="text-blue-600 hover:text-blue-700"
+            >
+              Reset filters
+            </button>
+          </div>
         </div>
 
         {loading ? <p className="text-gray-600">Loading jobs...</p> : null}
@@ -113,7 +210,7 @@ const JobSearch = () => {
 
         {!loading && !error && (
           <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
-            {filteredJobs.map((job) => (
+            {jobs.map((job) => (
               <div
                 key={job._id}
                 className="flex flex-col md:flex-row md:items-center gap-4 p-5 border-b border-gray-100 last:border-b-0 cursor-pointer hover:bg-gray-50 transition-colors"
@@ -183,7 +280,7 @@ const JobSearch = () => {
                 </div>
               </div>
             ))}
-            {filteredJobs.length === 0 ? (
+            {jobs.length === 0 ? (
               <p className="text-gray-600 p-6">No matching jobs found.</p>
             ) : null}
           </div>
