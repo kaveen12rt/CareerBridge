@@ -1,155 +1,8 @@
-import { useMemo, useState, useEffect } from 'react';
+import { useMemo, useState } from 'react';
 import { jsPDF } from 'jspdf';
 
 const CVGenerator = () => {
   const sampleProfileImage = '/images/cv-example-man.svg';
-  
-  const [userId, setUserId] = useState(null);
-  const [savedCVs, setSavedCVs] = useState([]);
-  const [showSaveModal, setShowSaveModal] = useState(false);
-  const [cvName, setCvName] = useState('');
-  const [savingCV, setSavingCV] = useState(false);
-  const [loadingCVs, setLoadingCVs] = useState(false);
-
-  // Load user ID and fetch saved CVs
-  useEffect(() => {
-    const loadUserData = async () => {
-      try {
-        const res = await fetch('http://localhost:5000/api/auth/profile', {
-          credentials: 'include',
-        });
-        const data = await res.json();
-        if (data?.data?.user?._id) {
-          setUserId(data.data.user._id);
-          fetchSavedCVs(data.data.user._id);
-        }
-      } catch (error) {
-        console.error('Error loading user data:', error);
-      }
-    };
-    
-    loadUserData();
-  }, []);
-
-  const fetchSavedCVs = async (studentId) => {
-    setLoadingCVs(true);
-    try {
-      const res = await fetch(`http://localhost:5000/api/job-match/cv/${studentId}`, {
-        credentials: 'include',
-      });
-      const data = await res.json();
-      if (data?.templates) {
-        setSavedCVs(data.templates);
-      }
-    } catch (error) {
-      console.error('Error fetching saved CVs:', error);
-    } finally {
-      setLoadingCVs(false);
-    }
-  };
-
-  const saveCV = async () => {
-    if (!cvName.trim() || !userId) {
-      alert('Please enter a CV name');
-      return;
-    }
-
-    setSavingCV(true);
-    try {
-      const payload = {
-        name: cvName.trim(),
-        summary: form.summary,
-        sections: [
-          { title: 'fullName', content: form.fullName },
-          { title: 'role', content: form.role },
-          { title: 'email', content: form.email },
-          { title: 'phone', content: form.phone },
-          { title: 'address', content: form.address },
-          { title: 'profileImage', content: form.profileImage },
-          { title: 'profileImageType', content: form.profileImageType },
-          { title: 'education', content: form.education },
-          { title: 'skills', content: form.skills },
-          { title: 'experience', content: form.experience },
-          { title: 'languages', content: form.languages },
-          { title: 'references', content: form.references },
-          { title: 'projects', content: form.projects },
-          { title: 'selectedTemplate', content: selectedTemplate }
-        ]
-      };
-
-      const res = await fetch(`http://localhost:5000/api/job-match/cv/${userId}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify(payload),
-      });
-
-      if (res.ok) {
-        const savedCV = await res.json();
-        setSavedCVs([savedCV, ...savedCVs]);
-        setShowSaveModal(false);
-        setCvName('');
-        alert('CV saved successfully!');
-      } else {
-        alert('Failed to save CV');
-      }
-    } catch (error) {
-      console.error('Error saving CV:', error);
-      alert('Error saving CV');
-    } finally {
-      setSavingCV(false);
-    }
-  };
-
-  const deleteCV = async (cvId) => {
-    if (!window.confirm('Are you sure you want to delete this CV?')) return;
-
-    try {
-      const res = await fetch(`http://localhost:5000/api/job-match/cv/template/${cvId}`, {
-        method: 'DELETE',
-        credentials: 'include',
-      });
-
-      if (res.ok) {
-        setSavedCVs(savedCVs.filter((cv) => cv._id !== cvId));
-        alert('CV deleted successfully!');
-      } else {
-        alert('Failed to delete CV');
-      }
-    } catch (error) {
-      console.error('Error deleting CV:', error);
-      alert('Error deleting CV');
-    }
-  };
-
-  const loadCV = (cv) => {
-    const sectionMap = {};
-    if (cv.sections) {
-      cv.sections.forEach((section) => {
-        sectionMap[section.title] = section.content;
-      });
-    }
-    
-    setForm({
-      fullName: sectionMap.fullName || '',
-      role: sectionMap.role || '',
-      profileImage: sectionMap.profileImage || '',
-      profileImageType: sectionMap.profileImageType || '',
-      email: sectionMap.email || '',
-      phone: sectionMap.phone || '',
-      address: sectionMap.address || '',
-      summary: cv.summary || '',
-      education: sectionMap.education || '',
-      skills: sectionMap.skills || '',
-      experience: sectionMap.experience || '',
-      languages: sectionMap.languages || '',
-      references: sectionMap.references || '',
-      projects: sectionMap.projects || ''
-    });
-    
-    setSelectedTemplate(sectionMap.selectedTemplate || null);
-    setPreview(true);
-  };
 
   const sampleData = {
     fullName: 'Lorna Alvarado',
@@ -1238,22 +1091,13 @@ const CVGenerator = () => {
                 </button>
 
                 {preview ? (
-                  <>
-                    <button
-                      type="button"
-                      onClick={() => setShowSaveModal(true)}
-                      className="bg-emerald-600 text-white px-4 py-2 rounded-lg hover:bg-emerald-700"
-                    >
-                      Save CV
-                    </button>
-                    <button
-                      type="button"
-                      onClick={downloadPdf}
-                      className="bg-gray-900 text-white px-4 py-2 rounded-lg hover:bg-black"
-                    >
-                      Download PDF
-                    </button>
-                  </>
+                  <button
+                    type="button"
+                    onClick={downloadPdf}
+                    className="bg-gray-900 text-white px-4 py-2 rounded-lg hover:bg-black"
+                  >
+                    Download PDF
+                  </button>
                 ) : null}
               </div>
             </div>
@@ -1451,82 +1295,6 @@ const CVGenerator = () => {
                   </div>
                 )
               )}
-            </div>
-          </div>
-        )}
-
-        {/* Saved CVs Section */}
-        {selectedTemplate && (
-          <div className="mt-8">
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">My Saved CVs</h2>
-            {loadingCVs ? (
-              <p className="text-gray-500">Loading saved CVs...</p>
-            ) : savedCVs.length === 0 ? (
-              <p className="text-gray-500">No saved CVs yet. Create and save your first CV!</p>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {savedCVs.map((cv) => (
-                  <div key={cv._id} className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
-                    <h3 className="font-semibold text-gray-900 mb-2">{cv.name}</h3>
-                    <p className="text-sm text-gray-500 mb-4">
-                      Saved on {new Date(cv.createdAt).toLocaleDateString()}
-                    </p>
-                    <div className="flex gap-2">
-                      <button
-                        type="button"
-                        onClick={() => loadCV(cv)}
-                        className="flex-1 bg-indigo-600 text-white px-3 py-2 rounded text-sm hover:bg-indigo-700"
-                      >
-                        Load
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => deleteCV(cv._id)}
-                        className="bg-red-600 text-white px-3 py-2 rounded text-sm hover:bg-red-700"
-                      >
-                        Delete
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* Save Modal */}
-        {showSaveModal && (
-          <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
-            <div className="bg-white rounded-lg shadow-lg p-6 max-w-md w-full">
-              <h2 className="text-xl font-bold text-gray-900 mb-4">Save CV</h2>
-              <p className="text-gray-600 mb-4">Give your CV a name to save it for later.</p>
-              <input
-                type="text"
-                value={cvName}
-                onChange={(e) => setCvName(e.target.value)}
-                placeholder="e.g., Marketing Manager CV, Job Application"
-                className="w-full border border-gray-300 rounded px-3 py-2 mb-4 text-gray-900 placeholder-gray-500"
-              />
-              <div className="flex gap-3">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setShowSaveModal(false);
-                    setCvName('');
-                  }}
-                  className="flex-1 px-4 py-2 rounded border border-gray-300 text-gray-700 hover:bg-gray-50"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="button"
-                  onClick={saveCV}
-                  disabled={savingCV}
-                  className="flex-1 px-4 py-2 rounded bg-emerald-600 text-white hover:bg-emerald-700 disabled:bg-gray-400"
-                >
-                  {savingCV ? 'Saving...' : 'Save CV'}
-                </button>
-              </div>
             </div>
           </div>
         )}
