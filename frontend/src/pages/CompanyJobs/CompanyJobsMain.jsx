@@ -5,7 +5,9 @@ import CompanyJobsNavigation from '../../components/CompanyJobs/CompanyJobsNavig
 import {
   CompanyDashboard,
   JobPostingForm,
-  JobManagement
+  JobManagement,
+  InterviewSlotManagement,
+  CompanyJobsReports,
 } from './index';
 
 const CompanyJobsMain = () => {
@@ -20,18 +22,22 @@ const CompanyJobsMain = () => {
         return <JobPostingForm />;
       case 'manage-jobs':
         return <JobManagement />;
+      case 'interview-slots':
+        return <InterviewSlotManagement />;
+      case 'reports':
+        return <CompanyJobsReports />;
       default:
         return <CompanyDashboard onNavigate={setCurrentPage} />;
     }
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Back to Home Button */}
-      <div className="bg-white border-b border-gray-200 px-4 py-2">
+    <div className="min-h-screen bg-slate-50">
+      {/* Back to Admin Button */}
+      <div className="bg-blue-950 border-b border-blue-900 px-4 py-2">
         <button
           onClick={() => navigate('/admin')}
-          className="flex items-center space-x-2 text-gray-600 hover:text-blue-600 transition-colors duration-200"
+          className="flex items-center space-x-2 text-blue-100 hover:text-white transition-colors duration-200"
         >
           <ArrowLeftIcon className="h-5 w-5" />
           <span className="text-sm font-medium">← Back to Admin Home</span>

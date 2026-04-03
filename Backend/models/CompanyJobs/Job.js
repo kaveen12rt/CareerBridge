@@ -11,6 +11,11 @@ const jobSchema = new mongoose.Schema(
       type: String,
       trim: true,
     },
+    companyEmail: {
+      type: String,
+      trim: true,
+      lowercase: true,
+    },
     title: {
       type: String,
       required: true,
@@ -77,6 +82,10 @@ const jobSchema = new mongoose.Schema(
       required: true,
     },
     applicationsCount: {
+      type: Number,
+      default: 0,
+    },
+    interviewsCount: {
       type: Number,
       default: 0,
     },
