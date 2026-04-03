@@ -108,19 +108,19 @@ const InterviewSlotPicker = ({ application, onClose, onBooked }) => {
     >
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col">
         {/* Header */}
-        <div className="bg-gradient-to-r from-indigo-500 to-purple-600 text-white p-6 rounded-t-2xl flex items-start justify-between">
+        <div className="bg-gradient-to-r from-blue-900 to-blue-800 text-white p-6 rounded-t-2xl flex items-start justify-between">
           <div>
             <h2 className="text-xl font-bold">Select Interview Slot</h2>
-            <p className="text-indigo-100 mt-1">
+            <p className="text-blue-200 mt-1">
               {application.jobId?.title || 'Interview Booking'}
             </p>
-            <p className="text-indigo-200 text-sm">
+            <p className="text-blue-300 text-sm">
               {application.jobId?.companyName}
             </p>
           </div>
           <button
             onClick={onClose}
-            className="ml-4 text-indigo-200 hover:text-white transition-colors"
+            className="ml-4 text-blue-300 hover:text-white transition-colors"
           >
             <XMarkIcon className="w-6 h-6" />
           </button>
@@ -136,7 +136,7 @@ const InterviewSlotPicker = ({ application, onClose, onBooked }) => {
 
           {loading ? (
             <div className="flex justify-center items-center py-16">
-              <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-indigo-500" />
+              <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-800" />
             </div>
           ) : slots.length === 0 ? (
             <div className="text-center py-16 text-gray-400">
@@ -161,14 +161,14 @@ const InterviewSlotPicker = ({ application, onClose, onBooked }) => {
                     onClick={() => setSelected(slot)}
                     className={`w-full text-left p-4 rounded-xl border-2 transition-all ${
                       isSelected
-                        ? 'border-indigo-500 bg-indigo-50 shadow-sm'
-                        : 'border-gray-200 hover:border-indigo-300 hover:bg-gray-50'
+                        ? 'border-blue-800 bg-blue-50 shadow-sm'
+                        : 'border-gray-200 hover:border-blue-400 hover:bg-gray-50'
                     }`}
                   >
                     <div className="flex items-center justify-between gap-4">
                       <div className="flex items-center gap-3 min-w-0">
                         {isSelected ? (
-                          <CheckCircleIcon className="w-5 h-5 text-indigo-500 flex-shrink-0" />
+                          <CheckCircleIcon className="w-5 h-5 text-blue-800 flex-shrink-0" />
                         ) : (
                           <CalendarIcon className="w-5 h-5 text-gray-400 flex-shrink-0" />
                         )}
@@ -213,7 +213,7 @@ const InterviewSlotPicker = ({ application, onClose, onBooked }) => {
           <button
             onClick={handleConfirm}
             disabled={!selected || confirming}
-            className="flex-1 py-3 bg-indigo-600 text-white rounded-lg font-bold hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex-1 py-3 bg-amber-500 text-white rounded-lg font-bold hover:bg-amber-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {confirming ? 'Confirming…' : 'Confirm Slot'}
           </button>

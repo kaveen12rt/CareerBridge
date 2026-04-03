@@ -29,9 +29,9 @@ const PAYMENT_STATUS = {
 
 const APP_STATUS = {
   pending:             { label: 'Pending',    cls: 'bg-blue-100 text-blue-700'    },
-  reviewing:           { label: 'Reviewing',  cls: 'bg-purple-100 text-purple-700' },
+  reviewing:           { label: 'Reviewing',  cls: 'bg-blue-100 text-blue-700'   },
   accepted:            { label: 'Accepted',   cls: 'bg-teal-100 text-teal-700'    },
-  interview_scheduled: { label: 'Scheduled',  cls: 'bg-indigo-100 text-indigo-700' },
+  interview_scheduled: { label: 'Scheduled',  cls: 'bg-blue-50 text-blue-800'   },
   rejected:            { label: 'Rejected',   cls: 'bg-red-100 text-red-700'      },
   withdrawn:           { label: 'Withdrawn',  cls: 'bg-gray-100 text-gray-500'    },
 };
@@ -123,7 +123,7 @@ const ConfirmModal = ({
         <button
           onClick={onConfirm}
           disabled={confirming}
-          className="px-4 py-2 text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition disabled:opacity-60"
+          className="px-4 py-2 text-sm font-semibold text-white bg-amber-500 hover:bg-amber-600 rounded-lg transition disabled:opacity-60"
         >
           {confirming ? 'Savingâ€¦' : confirmLabel}
         </button>
@@ -291,19 +291,19 @@ const OverviewPanel = ({ stats, applications, payments, slots, onNav }) => {
         <div className="flex flex-wrap gap-3">
           <button
             onClick={() => onNav('applications')}
-            className="px-5 py-2.5 bg-slate-700 text-white text-sm font-semibold rounded-lg hover:bg-slate-800 transition"
+            className="px-5 py-2.5 bg-blue-800 text-white text-sm font-semibold rounded-lg hover:bg-blue-900 transition"
           >
             Manage Applications
           </button>
           <button
             onClick={() => onNav('interviews')}
-            className="px-5 py-2.5 bg-slate-700 text-white text-sm font-semibold rounded-lg hover:bg-slate-800 transition"
+            className="px-5 py-2.5 bg-blue-800 text-white text-sm font-semibold rounded-lg hover:bg-blue-900 transition"
           >
             Manage Interviews
           </button>
           <button
             onClick={() => onNav('payments')}
-            className="px-5 py-2.5 bg-slate-700 text-white text-sm font-semibold rounded-lg hover:bg-slate-800 transition flex items-center gap-1.5"
+            className="px-5 py-2.5 bg-blue-800 text-white text-sm font-semibold rounded-lg hover:bg-blue-900 transition flex items-center gap-1.5"
           >
             Manage Payments
             <ArrowRightIcon className="w-4 h-4" />
@@ -371,7 +371,7 @@ const ApplicationsPanel = ({ applications, search, onStatusUpdate }) => {
               key={f}
               onClick={() => setFilter(f)}
               className={`px-3 py-1 rounded-full text-xs font-semibold capitalize transition ${
-                filter === f ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
+                filter === f ? 'bg-blue-800 text-white' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
               }`}
             >
               {f}
@@ -848,16 +848,16 @@ const ApplicationsDashboard = () => {
     <div className="flex h-screen bg-gray-50 overflow-hidden">
 
       {/* â”€â”€ Sidebar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
-      <aside className="w-16 bg-slate-800 flex flex-col items-center py-5 gap-1 flex-shrink-0">
+      <aside className="w-16 bg-blue-900 flex flex-col items-center py-5 gap-1 flex-shrink-0">
         {/* Back to admin home */}
         <button
           onClick={() => navigate('/admin')}
           title="Back to Admin Home"
-          className="w-10 h-10 flex items-center justify-center rounded-xl text-slate-400 hover:text-white hover:bg-slate-700 transition mb-3"
+          className="w-10 h-10 flex items-center justify-center rounded-xl text-blue-300 hover:text-white hover:bg-blue-800 transition mb-3"
         >
           <ArrowRightIcon className="w-5 h-5 rotate-180" />
         </button>
-        <div className="w-8 border-t border-slate-600 mb-2" />
+        <div className="w-8 border-t border-blue-700 mb-2" />
 
         {NAV.map(({ id, Icon, label }) => (
           <button
@@ -866,8 +866,8 @@ const ApplicationsDashboard = () => {
             title={label}
             className={`w-10 h-10 flex items-center justify-center rounded-xl transition ${
               activeNav === id
-                ? 'bg-blue-600 text-white shadow-lg'
-                : 'text-slate-400 hover:text-white hover:bg-slate-700'
+                ? 'bg-amber-500 text-white shadow-lg'
+                : 'text-blue-300 hover:text-white hover:bg-blue-800'
             }`}
           >
             <Icon className="w-6 h-6" />
@@ -878,13 +878,13 @@ const ApplicationsDashboard = () => {
           <button
             onClick={loadAll}
             title="Refresh data"
-            className="w-10 h-10 flex items-center justify-center rounded-xl text-slate-400 hover:text-white hover:bg-slate-700 transition"
+            className="w-10 h-10 flex items-center justify-center rounded-xl text-blue-300 hover:text-white hover:bg-blue-800 transition"
           >
             <ArrowPathIcon className="w-5 h-5" />
           </button>
           <button
             title="Settings"
-            className="w-10 h-10 flex items-center justify-center rounded-xl text-slate-400 hover:text-white hover:bg-slate-700 transition"
+            className="w-10 h-10 flex items-center justify-center rounded-xl text-blue-300 hover:text-white hover:bg-blue-800 transition"
           >
             <Cog6ToothIcon className="w-6 h-6" />
           </button>
@@ -924,7 +924,7 @@ const ApplicationsDashboard = () => {
         {/* Panels */}
         {loading ? (
           <div className="flex-1 flex items-center justify-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600" />
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-800" />
           </div>
         ) : (
           <main className="flex-1 overflow-y-auto p-6">

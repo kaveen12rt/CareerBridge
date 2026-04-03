@@ -104,7 +104,7 @@ const JobDetails = () => {
           <h2 className="text-2xl font-bold text-gray-900 mb-2">Job Not Found</h2>
           <button
             onClick={() => navigate('/jobs')}
-            className="mt-4 px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+            className="mt-4 px-6 py-2 bg-blue-800 text-white rounded-lg hover:bg-blue-900"
           >
             Back to Job Listings
           </button>
@@ -116,18 +116,18 @@ const JobDetails = () => {
   return (
     <>
     <div className="min-h-screen bg-gray-100 pb-10">
-      <div className="bg-gradient-to-r from-cyan-500 to-sky-600 text-white">
+      <div className="bg-gradient-to-r from-blue-900 to-blue-800 text-white">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-10">
           <button
             onClick={() => navigate('/jobs')}
-            className="mb-5 inline-flex items-center text-cyan-100 hover:text-white font-medium"
+            className="mb-5 inline-flex items-center text-blue-200 hover:text-white font-medium"
           >
             <ArrowLeftIcon className="w-5 h-5 mr-2" />
             Back to Listings
           </button>
 
           <h1 className="text-3xl md:text-5xl font-extrabold leading-tight max-w-4xl">{job.title}</h1>
-          <p className="text-xl md:text-3xl text-cyan-100 font-semibold mt-2">{job.companyName || 'Company'}</p>
+          <p className="text-xl md:text-3xl text-blue-200 font-semibold mt-2">{job.companyName || 'Company'}</p>
         </div>
       </div>
 
@@ -145,7 +145,7 @@ const JobDetails = () => {
                 <ul className="space-y-3">
                   {job.requirements.map((item, index) => (
                     <li key={index} className="flex items-start">
-                      <CheckCircleIcon className="h-5 w-5 text-cyan-500 mr-3 mt-0.5 flex-shrink-0" />
+                      <CheckCircleIcon className="h-5 w-5 text-blue-600 mr-3 mt-0.5 flex-shrink-0" />
                       <span className="text-gray-700">{item}</span>
                     </li>
                   ))}
@@ -159,7 +159,7 @@ const JobDetails = () => {
                 <ul className="space-y-3">
                   {job.skills.map((skill, index) => (
                     <li key={index} className="flex items-start">
-                      <CheckCircleIcon className="h-5 w-5 text-cyan-500 mr-3 mt-0.5 flex-shrink-0" />
+                      <CheckCircleIcon className="h-5 w-5 text-blue-600 mr-3 mt-0.5 flex-shrink-0" />
                       <span className="text-gray-700">{skill}</span>
                     </li>
                   ))}
@@ -239,7 +239,7 @@ const JobDetails = () => {
               ) : (
                 <button
                   onClick={handleApply}
-                  className="w-full mt-6 py-3 bg-lime-500 text-white rounded-lg font-bold hover:bg-lime-600 transition-colors"
+                  className="w-full mt-6 py-3 bg-amber-500 text-white rounded-lg font-bold hover:bg-amber-600 transition-colors"
                 >
                   APPLY FOR JOB
                 </button>

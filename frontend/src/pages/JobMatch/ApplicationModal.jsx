@@ -94,11 +94,11 @@ const ApplicationModal = ({ job, studentId, onClose, onSuccess }) => {
     >
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg">
         {/* Header */}
-        <div className="bg-gradient-to-r from-cyan-500 to-sky-600 text-white p-6 rounded-t-2xl flex items-start justify-between">
+        <div className="bg-gradient-to-r from-blue-900 to-blue-800 text-white p-6 rounded-t-2xl flex items-start justify-between">
           <div>
             <h2 className="text-xl font-bold">Apply for Position</h2>
-            <p className="text-cyan-100 mt-1 font-semibold text-lg">{job.title}</p>
-            <div className="flex items-center gap-4 mt-1 text-cyan-200 text-sm">
+            <p className="text-blue-200 mt-1 font-semibold text-lg">{job.title}</p>
+            <div className="flex items-center gap-4 mt-1 text-blue-300 text-sm">
               <span className="flex items-center gap-1">
                 <BriefcaseIcon className="w-4 h-4" />
                 {job.companyName}
@@ -113,7 +113,7 @@ const ApplicationModal = ({ job, studentId, onClose, onSuccess }) => {
           </div>
           <button
             onClick={onClose}
-            className="ml-4 text-cyan-200 hover:text-white transition-colors"
+            className="ml-4 text-blue-300 hover:text-white transition-colors"
           >
             <XMarkIcon className="w-6 h-6" />
           </button>
@@ -197,7 +197,7 @@ const ApplicationModal = ({ job, studentId, onClose, onSuccess }) => {
             maxLength={2000}
             rows={5}
             disabled={loading}
-            className="w-full border border-gray-300 rounded-lg px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-400 resize-none disabled:opacity-60"
+            className="w-full border border-gray-300 rounded-lg px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none disabled:opacity-60"
             placeholder="Briefly describe why you are a great fit for this role…"
           />
           <p className="text-xs text-gray-400 text-right mt-1">{coverLetter.length} / 2000</p>
@@ -214,7 +214,7 @@ const ApplicationModal = ({ job, studentId, onClose, onSuccess }) => {
             <button
               onClick={handleSubmit}
               disabled={loading || !studentId}
-              className="flex-1 py-3 bg-lime-500 text-white rounded-lg font-bold hover:bg-lime-600 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+              className="flex-1 py-3 bg-amber-500 text-white rounded-lg font-bold hover:bg-amber-600 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
             >
               {loading ? 'Submitting…' : 'Submit Application'}
             </button>
