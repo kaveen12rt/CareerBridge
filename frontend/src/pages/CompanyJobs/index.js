@@ -5,3 +5,4 @@ export { default as JobManagement } from './JobManagement';
 export { default as JobDetails } from './JobDetails';
 export { default as CompanyJobsMain } from './CompanyJobsMain';
 export { default as InterviewSlotManagement } from './InterviewSlotManagement';
+export { default as CompanyJobsReports } from './CompanyJobsReports';

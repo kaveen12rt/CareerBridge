@@ -98,24 +98,34 @@ const Toast = ({ msg, type, onClose }) => (
   </div>
 );
 
-const ConfirmModal = ({ title, body, onConfirm, onCancel, confirming }) => (
+const ConfirmModal = ({
+  title,
+  body,
+  onConfirm,
+  onCancel,
+  confirming,
+  confirmLabel = 'Confirm',
+  hideCancel = false,
+}) => (
   <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
     <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm p-6">
       <h3 className="text-lg font-bold text-gray-800 mb-2">{title}</h3>
-      <p className="text-sm text-gray-500 mb-6">{body}</p>
+      <div className="text-sm text-gray-500 mb-6">{body}</div>
       <div className="flex gap-3 justify-end">
-        <button
-          onClick={onCancel}
-          className="px-4 py-2 text-sm font-semibold text-gray-600 hover:bg-gray-100 rounded-lg transition"
-        >
-          Cancel
-        </button>
+        {!hideCancel && (
+          <button
+            onClick={onCancel}
+            className="px-4 py-2 text-sm font-semibold text-gray-600 hover:bg-gray-100 rounded-lg transition"
+          >
+            Cancel
+          </button>
+        )}
         <button
           onClick={onConfirm}
           disabled={confirming}
           className="px-4 py-2 text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition disabled:opacity-60"
         >
-          {confirming ? 'Savingâ€¦' : 'Confirm'}
+          {confirming ? 'Savingâ€¦' : confirmLabel}
         </button>
       </div>
     </div>
@@ -310,6 +320,7 @@ const ApplicationsPanel = ({ applications, search, onStatusUpdate }) => {
   const [actionApp, setActionApp] = useState(null);
   const [newStatus, setNewStatus] = useState('');
   const [confirming, setConfirming] = useState(false);
+  const [previewApp, setPreviewApp] = useState(null);
 
   const displayed = applications
     .filter(FILTER_MAP[filter] || FILTER_MAP.all)
@@ -378,6 +389,7 @@ const ApplicationsPanel = ({ applications, search, onStatusUpdate }) => {
               <th className="pb-2 pr-3 font-medium">Email</th>
               <th className="pb-2 pr-3 font-medium">Position</th>
               <th className="pb-2 pr-3 font-medium">Company</th>
+              <th className="pb-2 pr-3 font-medium">CV / Letter</th>
               <th className="pb-2 pr-3 font-medium">Status</th>
               <th className="pb-2 pr-3 font-medium">Date</th>
               <th className="pb-2 font-medium">Set Status</th>
@@ -386,7 +398,7 @@ const ApplicationsPanel = ({ applications, search, onStatusUpdate }) => {
           <tbody>
             {displayed.length === 0 ? (
               <tr>
-                <td colSpan={8} className="py-10 text-center text-gray-400">
+                <td colSpan={9} className="py-10 text-center text-gray-400">
                   No applications found.
                 </td>
               </tr>
@@ -406,6 +418,15 @@ const ApplicationsPanel = ({ applications, search, onStatusUpdate }) => {
                 </td>
                 <td className="py-2.5 pr-3 text-gray-500 text-xs max-w-[110px] truncate">
                   {app.jobId?.companyName || 'â€”'}
+                </td>
+                <td className="py-2.5 pr-3">
+                  <button
+                    type="button"
+                    onClick={() => setPreviewApp(app)}
+                    className="text-xs font-semibold text-blue-600 hover:text-blue-700"
+                  >
+                    View
+                  </button>
                 </td>
                 <td className="py-2.5 pr-3">
                   <StatusBadge status={app.status} />
@@ -447,6 +468,49 @@ const ApplicationsPanel = ({ applications, search, onStatusUpdate }) => {
           onConfirm={handleConfirm}
           onCancel={() => { setActionApp(null); setNewStatus(''); }}
           confirming={confirming}
+        />
+      )}
+
+      {previewApp && (
+        <ConfirmModal
+          title="Cover Letter & CV"
+          body={
+            <div className="space-y-4">
+              <div>
+                <p className="text-xs font-semibold text-gray-500 uppercase">Applicant</p>
+                <div className="mt-2 rounded-lg border border-gray-200 bg-gray-50 p-3 text-sm text-gray-700">
+                  <p><strong>Name:</strong> {previewApp.applicantName || '—'}</p>
+                  <p><strong>Email:</strong> {previewApp.applicantEmail || previewApp.studentId?.email || '—'}</p>
+                  <p><strong>Phone:</strong> {previewApp.applicantPhone || '—'}</p>
+                </div>
+              </div>
+              <div>
+                <p className="text-xs font-semibold text-gray-500 uppercase">Cover Letter</p>
+                <div className="mt-2 rounded-lg border border-gray-200 bg-gray-50 p-3 text-sm text-gray-700 whitespace-pre-line">
+                  {previewApp.coverLetter?.trim() || 'No cover letter submitted.'}
+                </div>
+              </div>
+              <div>
+                <p className="text-xs font-semibold text-gray-500 uppercase">Resume</p>
+                {previewApp.resumeFileData ? (
+                  <a
+                    href={previewApp.resumeFileData}
+                    download={previewApp.resumeFileName || 'resume'}
+                    className="inline-flex items-center text-sm font-semibold text-blue-600 hover:text-blue-700"
+                  >
+                    Download CV
+                  </a>
+                ) : (
+                  <p className="text-sm text-gray-500">No CV uploaded.</p>
+                )}
+              </div>
+            </div>
+          }
+          onConfirm={() => setPreviewApp(null)}
+          onCancel={() => setPreviewApp(null)}
+          confirming={false}
+          confirmLabel="Close"
+          hideCancel
         />
       )}
     </div>

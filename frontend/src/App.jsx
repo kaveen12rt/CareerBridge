@@ -28,6 +28,7 @@ import SmartMatching from "./pages/JobMatch/SmartMatching";
 import CVGenerator from "./pages/JobMatch/CVGenerator";
 import MyApplications from "./pages/JobMatch/MyApplications";
 import ApplicationsDashboard from "./pages/JobMatch/ApplicationsDashboard";
+import adminHero from "./assets/admin-hero.jpg";
 
 function AdminDashboard() {
   const [apiStatus, setApiStatus] = useState("Checking...");
@@ -48,107 +49,132 @@ function AdminDashboard() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
-      <nav className="bg-white shadow-md px-8 py-4 flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-indigo-600">
+    <div className="min-h-screen bg-white">
+      <nav className="bg-white/90 backdrop-blur border-b border-blue-100 px-8 py-4 flex items-center justify-between">
+        <h1 className="text-2xl font-bold text-blue-900">
           CareerBridge - Admin Portal
         </h1>
-        <div className="flex gap-4">
-          <Link to="/" className="text-gray-600 hover:text-indigo-600">
+        <div className="flex gap-4 text-sm font-semibold">
+          <Link to="/" className="text-slate-500 hover:text-blue-900 transition">
             User Portal
           </Link>
-          <Link to="/admin" className="text-indigo-600 font-semibold">
+          <Link to="/admin" className="text-blue-900">
             Admin Home
           </Link>
         </div>
       </nav>
 
-      <div className="flex flex-col items-center justify-center mt-20 px-4">
-        <h2 className="text-5xl font-extrabold text-gray-800 mb-4 text-center">
-          Admin <span className="text-indigo-600">Dashboard</span>
-        </h2>
-        <p className="text-lg text-gray-500 mb-8 text-center max-w-xl">
-          Manage your team&apos;s modules - Company Jobs, Student Profiles,
-          Applications, and Job Matching.
-        </p>
+      <section
+        className="relative overflow-hidden bg-blue-900"
+        style={{
+          backgroundImage: `linear-gradient(120deg, rgba(15, 23, 42, 0.92), rgba(30, 64, 175, 0.88)), url(${adminHero})`,
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+        }}
+      >
+        <div className="admin-blob admin-blob-left" aria-hidden="true" />
+        <div className="admin-blob admin-blob-right" aria-hidden="true" />
+        <div className="admin-dots" aria-hidden="true" />
 
-        <div className="bg-white rounded-2xl shadow-lg p-6 w-full max-w-md text-center">
-          <h3 className="text-sm font-semibold text-gray-400 uppercase mb-2">
-            Backend Status
-          </h3>
-          {loading ? (
-            <p className="text-yellow-500 font-medium">Connecting...</p>
-          ) : (
-            <p
-              className={`text-lg font-bold ${
-                apiStatus === "CareerBridge API is running"
-                  ? "text-green-500"
-                  : "text-red-500"
-              }`}
-            >
-              {apiStatus}
+        <div className="relative max-w-6xl mx-auto px-6 py-16 grid grid-cols-1 lg:grid-cols-[1.3fr_0.7fr] gap-10 items-center">
+          <div className="text-white admin-fade-up">
+            <p className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-orange-200 bg-white/10 px-3 py-1 rounded-full">
+              Admin Workspace
             </p>
-          )}
-        </div>
+            <h2 className="text-5xl font-extrabold mt-5">
+              Admin <span className="text-orange-300">Dashboard</span>
+            </h2>
+            <p className="text-blue-100 mt-4 max-w-2xl">
+              Manage your team&apos;s modules - Company Jobs, Student Profiles, Applications, and Job Matching.
+            </p>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-12 max-w-4xl w-full">
-          <div
+            <div className="mt-8 inline-flex items-center gap-4 bg-white/10 border border-white/10 rounded-2xl px-6 py-4 shadow-xl admin-fade-up">
+              <span className="admin-pulse-dot" />
+              <div>
+                <p className="text-xs font-semibold uppercase text-blue-100">Backend Status</p>
+                {loading ? (
+                  <p className="text-orange-200 font-semibold">Connecting...</p>
+                ) : (
+                  <p className={`text-lg font-bold ${apiStatus === "CareerBridge API is running" ? "text-emerald-300" : "text-orange-300"}`}>
+                    {apiStatus}
+                  </p>
+                )}
+              </div>
+            </div>
+          </div>
+
+          <div className="admin-illustration" aria-hidden="true">
+            <div className="admin-ill-card" />
+            <div className="admin-ill-ring" />
+            <div className="admin-ill-line" />
+          </div>
+        </div>
+      </section>
+
+      <section className="max-w-6xl mx-auto px-6 -mt-10 pb-16">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 admin-stagger">
+          <button
             onClick={() => navigate("/admin/student-profile")}
-            className="bg-white rounded-xl shadow p-6 border-l-4 border-blue-500 cursor-pointer hover:shadow-lg hover:bg-blue-50 transition-all duration-200 transform hover:scale-105"
+            className="admin-card"
+            style={{ animationDelay: '0ms' }}
           >
-            <h3 className="text-lg font-bold text-blue-600 mb-1">
-              StudentProfile
-            </h3>
-            <p className="text-gray-500 text-sm">
+            <div className="admin-card-header">
+              <span className="admin-card-icon">SP</span>
+              <span className="admin-card-arrow">→</span>
+            </div>
+            <h3 className="text-lg font-bold text-blue-900 mb-1">StudentProfile</h3>
+            <p className="text-slate-500 text-sm">
               Member 1 — Student Account + Profile Management
             </p>
-            <p className="text-xs text-blue-500 mt-2 font-semibold">
-              ✨ Click to Enter →
-            </p>
-          </div>
+            <p className="text-xs text-orange-600 mt-3 font-semibold">Click to Enter</p>
+          </button>
 
-          <div
+          <button
             onClick={() => navigate("/admin/company")}
-            className="bg-white rounded-xl shadow p-6 border-l-4 border-indigo-500 cursor-pointer hover:shadow-lg hover:bg-indigo-50 transition-all duration-200 transform hover:scale-105"
+            className="admin-card"
+            style={{ animationDelay: '80ms' }}
           >
-            <h3 className="text-lg font-bold text-indigo-600 mb-1">
-              CompanyJobs
-            </h3>
-            <p className="text-gray-500 text-sm">
+            <div className="admin-card-header">
+              <span className="admin-card-icon">CJ</span>
+              <span className="admin-card-arrow">→</span>
+            </div>
+            <h3 className="text-lg font-bold text-blue-900 mb-1">CompanyJobs</h3>
+            <p className="text-slate-500 text-sm">
               Member 2 — Company Dashboard + Job Posting + Interview Slots
             </p>
-            <p className="text-xs text-indigo-500 mt-2 font-semibold">
-              ✨ Click to Enter →
-            </p>
-          </div>
+            <p className="text-xs text-orange-600 mt-3 font-semibold">Click to Enter</p>
+          </button>
 
-          <div className="bg-white rounded-xl shadow p-6 border-l-4 border-purple-500 opacity-90">
-            <h3 className="text-lg font-bold text-purple-600 mb-1">
-              JobMatch
-            </h3>
-            <p className="text-gray-500 text-sm">
+          <div className="admin-card" style={{ animationDelay: '160ms' }}>
+            <div className="admin-card-header">
+              <span className="admin-card-icon">JM</span>
+              <span className="admin-card-chip">User portal</span>
+            </div>
+            <h3 className="text-lg font-bold text-blue-900 mb-1">JobMatch</h3>
+            <p className="text-slate-500 text-sm">
               Member 3 — Job Search + Smart Matching + CV Generator
             </p>
           </div>
 
-          <div
+          <button
             onClick={() => navigate('/admin/applications')}
-            className="bg-white rounded-xl shadow p-6 border-l-4 border-pink-500 cursor-pointer hover:shadow-lg hover:bg-pink-50 transition-all duration-200 transform hover:scale-105"
+            className="admin-card"
+            style={{ animationDelay: '240ms' }}
           >
-            <h3 className="text-lg font-bold text-pink-600 mb-1">
-              Applications
-            </h3>
-            <p className="text-gray-500 text-sm">
+            <div className="admin-card-header">
+              <span className="admin-card-icon">AP</span>
+              <span className="admin-card-arrow">→</span>
+            </div>
+            <h3 className="text-lg font-bold text-blue-900 mb-1">Applications</h3>
+            <p className="text-slate-500 text-sm">
               Member 4 — Applications + Interview Booking + Payment
             </p>
-            <p className="text-xs text-pink-500 mt-2 font-semibold">
-              ✨ Click to Enter →
-            </p>
-          </div>
+            <p className="text-xs text-orange-600 mt-3 font-semibold">Click to Enter</p>
+          </button>
         </div>
-      </div>
+      </section>
 
-      <footer className="mt-20 py-6 text-center text-gray-400 text-sm">
+      <footer className="py-6 text-center text-slate-400 text-sm">
         © 2026 CareerBridge — ITPM Group Project
       </footer>
     </div>
@@ -243,6 +269,19 @@ function UserMenu({ currentUser, onLogout }) {
 }
 
 function UserPortal() {
+  return (
+    <div>
+      <StudentHome />
+
+      <footer className="bg-gray-800 text-white py-6 text-center">
+        <p>© 2026 CareerBridge — ITPM Group Project</p>
+      </footer>
+    </div>
+  );
+}
+
+function AppContent() {
+  const location = useLocation();
   const [currentUser, setCurrentUser] = useState(null);
   const [checkingAuth, setCheckingAuth] = useState(true);
   const navigate = useNavigate();
@@ -285,76 +324,6 @@ function UserPortal() {
     }
   };
 
-  return (
-    <div>
-      <nav className="bg-white shadow-md px-8 py-4 flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-indigo-600">CareerBridge</h1>
-
-        <div className="flex-1 flex justify-center">
-          <div className="flex items-center gap-8">
-            <Link to="/" className="text-indigo-600 font-semibold">
-              Home
-            </Link>
-            <Link to="/jobs" className="text-gray-600 hover:text-indigo-600">
-              Jobs
-            </Link>
-            <Link
-              to="/smart-matching"
-              className="text-gray-600 hover:text-indigo-600"
-            >
-              Smart Matching
-            </Link>
-            <Link
-              to="/cv-generator"
-              className="text-gray-600 hover:text-indigo-600"
-            >
-              CV Generator
-            </Link>
-            <Link to="/my-applications" className="text-gray-600 hover:text-indigo-600">
-              My Applications
-            </Link>
-            <Link to="/feedback" className="text-gray-600 hover:text-indigo-600">
-              Feedback
-            </Link>
-            <Link to="/contact" className="text-gray-600 hover:text-indigo-600">
-              Contact Us
-            </Link>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-4">
-          {checkingAuth ? (
-            <span className="text-gray-500">Loading...</span>
-          ) : currentUser ? (
-            <UserMenu currentUser={currentUser} onLogout={handleLogout} />
-          ) : (
-            <>
-              <Link to="/signin" className="text-gray-600 hover:text-indigo-600">
-                Sign In
-              </Link>
-              <Link
-                to="/signup"
-                className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition"
-              >
-                Sign Up
-              </Link>
-            </>
-          )}
-        </div>
-      </nav>
-
-      <StudentHome />
-
-      <footer className="bg-gray-800 text-white py-6 text-center">
-        <p>© 2026 CareerBridge — ITPM Group Project</p>
-      </footer>
-    </div>
-  );
-}
-
-function AppContent() {
-  const location = useLocation();
-
   const hideChatbotRoutes = [
     "/signin",
     "/signup",
@@ -369,8 +338,67 @@ function AppContent() {
     hideChatbotRoutes.includes(location.pathname) ||
     location.pathname.startsWith("/reset-password/");
 
+  const shouldHideNavbar = location.pathname.startsWith("/admin");
+
   return (
     <>
+      {!shouldHideNavbar && (
+        <nav className="bg-white shadow-md px-8 py-4 flex items-center justify-between">
+          <h1 className="text-2xl font-bold text-indigo-600">CareerBridge</h1>
+
+          <div className="flex-1 flex justify-center">
+            <div className="flex items-center gap-8">
+              <Link to="/" className="text-indigo-600 font-semibold">
+                Home
+              </Link>
+              <Link to="/jobs" className="text-gray-600 hover:text-indigo-600">
+                Jobs
+              </Link>
+              <Link
+                to="/smart-matching"
+                className="text-gray-600 hover:text-indigo-600"
+              >
+                Smart Matching
+              </Link>
+              <Link
+                to="/cv-generator"
+                className="text-gray-600 hover:text-indigo-600"
+              >
+                CV Generator
+              </Link>
+              <Link to="/my-applications" className="text-gray-600 hover:text-indigo-600">
+                My Applications
+              </Link>
+              <Link to="/feedback" className="text-gray-600 hover:text-indigo-600">
+                Feedback
+              </Link>
+              <Link to="/contact" className="text-gray-600 hover:text-indigo-600">
+                Contact Us
+              </Link>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-4">
+            {checkingAuth ? (
+              <span className="text-gray-500">Loading...</span>
+            ) : currentUser ? (
+              <UserMenu currentUser={currentUser} onLogout={handleLogout} />
+            ) : (
+              <>
+                <Link to="/signin" className="text-gray-600 hover:text-indigo-600">
+                  Sign In
+                </Link>
+                <Link
+                  to="/signup"
+                  className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition"
+                >
+                  Sign Up
+                </Link>
+              </>
+            )}
+          </div>
+        </nav>
+      )}
       <Routes>
         <Route path="/" element={<UserPortal />} />
         <Route path="/jobs" element={<JobSearch />} />

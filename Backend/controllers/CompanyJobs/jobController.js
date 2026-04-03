@@ -304,6 +304,7 @@ const createJob = async (req, res) => {
     const {
       companyName,
       companyImage,
+      companyEmail,
       title,
       department,
       location,
@@ -329,6 +330,7 @@ const createJob = async (req, res) => {
     const job = new Job({
       companyName,
       companyImage,
+      companyEmail,
       title,
       department,
       location,

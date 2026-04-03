@@ -10,7 +10,16 @@ import Payment from "../../models/JobMatch/Payment.js";
 // ─────────────────────────────────────────────────────────────────────────────
 const submitApplication = async (req, res) => {
   try {
-    const { studentId, jobId, coverLetter } = req.body;
+    const {
+      studentId,
+      jobId,
+      coverLetter,
+      resumeFileName,
+      resumeFileData,
+      applicantName,
+      applicantEmail,
+      applicantPhone,
+    } = req.body;
 
     if (!studentId || !jobId) {
       return res.status(400).json({ message: "studentId and jobId are required" });
@@ -55,6 +64,11 @@ const submitApplication = async (req, res) => {
       jobId,
       companyId: job.companyId,
       coverLetter: coverLetter || "",
+      applicantName: applicantName || "",
+      applicantEmail: applicantEmail || "",
+      applicantPhone: applicantPhone || "",
+      resumeFileName: resumeFileName || "",
+      resumeFileData: resumeFileData || "",
       status: "pending",
     });
 

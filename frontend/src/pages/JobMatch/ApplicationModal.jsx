@@ -11,9 +11,40 @@ import { XMarkIcon, BriefcaseIcon, MapPinIcon } from '@heroicons/react/24/outlin
  *   onSuccess  – Called with the newly created application object on success.
  */
 const ApplicationModal = ({ job, studentId, onClose, onSuccess }) => {
+  const [applicantName, setApplicantName] = useState('');
+  const [applicantEmail, setApplicantEmail] = useState('');
+  const [applicantPhone, setApplicantPhone] = useState('');
   const [coverLetter, setCoverLetter] = useState('');
+  const [resumeFileName, setResumeFileName] = useState('');
+  const [resumeFileData, setResumeFileData] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+
+  const handleResumeChange = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) {
+      setResumeFileName('');
+      setResumeFileData('');
+      return;
+    }
+
+    const maxSizeMb = 2;
+    if (file.size > maxSizeMb * 1024 * 1024) {
+      setError(`Resume file must be under ${maxSizeMb}MB.`);
+      e.target.value = '';
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      setResumeFileName(file.name);
+      setResumeFileData(String(reader.result || ''));
+    };
+    reader.onerror = () => {
+      setError('Failed to read the selected resume file.');
+    };
+    reader.readAsDataURL(file);
+  };
 
   const handleSubmit = async () => {
     if (!studentId) {
@@ -29,7 +60,16 @@ const ApplicationModal = ({ job, studentId, onClose, onSuccess }) => {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
-        body: JSON.stringify({ studentId, jobId: job._id, coverLetter }),
+        body: JSON.stringify({
+          studentId,
+          jobId: job._id,
+          coverLetter,
+          applicantName,
+          applicantEmail,
+          applicantPhone,
+          resumeFileName,
+          resumeFileData,
+        }),
       });
 
       const data = await res.json();
@@ -94,6 +134,57 @@ const ApplicationModal = ({ job, studentId, onClose, onSuccess }) => {
             <strong>2 active applications</strong> at a time. Withdraw an existing application
             first if you have reached the limit.
           </div>
+
+          <label className="block text-sm font-semibold text-gray-700 mb-1">
+            Full Name
+          </label>
+          <input
+            type="text"
+            value={applicantName}
+            onChange={(e) => setApplicantName(e.target.value)}
+            disabled={loading}
+            className="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-400 disabled:opacity-60"
+            placeholder="Your full name"
+          />
+
+          <label className="block text-sm font-semibold text-gray-700 mb-1 mt-4">
+            Email
+          </label>
+          <input
+            type="email"
+            value={applicantEmail}
+            onChange={(e) => setApplicantEmail(e.target.value)}
+            disabled={loading}
+            className="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-400 disabled:opacity-60"
+            placeholder="you@email.com"
+          />
+
+          <label className="block text-sm font-semibold text-gray-700 mb-1 mt-4">
+            Phone Number
+          </label>
+          <input
+            type="tel"
+            value={applicantPhone}
+            onChange={(e) => setApplicantPhone(e.target.value)}
+            disabled={loading}
+            className="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-400 disabled:opacity-60"
+            placeholder="e.g., +94 7X XXX XXXX"
+          />
+
+          <label className="block text-sm font-semibold text-gray-700 mb-1 mt-4">
+            Upload CV
+            <span className="font-normal text-gray-400"> (PDF/DOC, max 2MB)</span>
+          </label>
+          <input
+            type="file"
+            accept=".pdf,.doc,.docx"
+            onChange={handleResumeChange}
+            disabled={loading}
+            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-400 disabled:opacity-60"
+          />
+          {resumeFileName ? (
+            <p className="text-xs text-gray-500 mt-1">Selected: {resumeFileName}</p>
+          ) : null}
 
           {/* Cover letter */}
           <label className="block text-sm font-semibold text-gray-700 mb-1">
