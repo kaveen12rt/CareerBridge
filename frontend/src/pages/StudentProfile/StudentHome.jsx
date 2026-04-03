@@ -155,54 +155,6 @@ const StudentHome = ({ currentUser }) => {
         </div>
       </section>
 
-      <section className="py-16 bg-white">
-        <div className="max-w-6xl mx-auto px-6">
-          <h3 className="text-3xl font-bold text-center mb-4 text-gray-800">
-            Career Tools
-          </h3>
-          <p className="text-center text-gray-600 mb-12">
-            Use these tools to search jobs, find your best match, and build your
-            CV.
-          </p>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <button
-              onClick={() => navigate("/jobs")}
-              className="bg-white rounded-2xl shadow-md p-6 border-t-4 border-blue-900 text-left hover:shadow-xl transition"
-            >
-              <h2 className="text-xl font-bold text-blue-900">Job Search</h2>
-              <p className="text-sm text-gray-600 mt-2">
-                Search and view active jobs with filtering.
-              </p>
-            </button>
-
-            <button
-              onClick={() => navigate("/smart-matching")}
-              className="bg-white rounded-2xl shadow-md p-6 border-t-4 border-orange-500 text-left hover:shadow-xl transition"
-            >
-              <h2 className="text-xl font-bold text-orange-500">
-                Smart Matching
-              </h2>
-              <p className="text-sm text-gray-600 mt-2">
-                Rank jobs based on your preferred skills.
-              </p>
-            </button>
-
-            <button
-              onClick={() => navigate("/cv-generator")}
-              className="bg-white rounded-2xl shadow-md p-6 border-t-4 border-green-500 text-left hover:shadow-xl transition"
-            >
-              <h2 className="text-xl font-bold text-green-600">
-                CV Generator
-              </h2>
-              <p className="text-sm text-gray-600 mt-2">
-                Build and preview your CV quickly.
-              </p>
-            </button>
-          </div>
-        </div>
-      </section>
-
       <section className="py-16 bg-gray-50">
         <div className="max-w-7xl mx-auto px-6">
           <h3 className="text-3xl font-bold text-center mb-12 text-gray-800">

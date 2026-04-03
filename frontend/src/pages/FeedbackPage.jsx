@@ -206,12 +206,18 @@ function FeedbackPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 px-4 py-10">
-      <div className="max-w-7xl mx-auto">
-        <div className="bg-white rounded-3xl shadow-xl p-8 mb-8">
-          <h1 className="text-4xl font-bold text-indigo-600 mb-3">
+      <div className="max-w-7xl mx-auto relative">
+        <div className="pointer-events-none absolute -top-24 -right-16 h-64 w-64 rounded-full bg-blue-300/30 blur-3xl" />
+        <div className="pointer-events-none absolute top-40 -left-20 h-72 w-72 rounded-full bg-indigo-300/25 blur-3xl" />
+
+        <div className="relative bg-white/80 backdrop-blur rounded-3xl shadow-xl p-8 mb-8 border border-white/60">
+          <div className="inline-flex items-center gap-2 bg-indigo-50 text-indigo-700 px-4 py-1 rounded-full text-xs font-semibold uppercase tracking-wide">
+            Community Voices
+          </div>
+          <h1 className="text-4xl font-bold text-indigo-700 mt-3 mb-3">
             Feedback
           </h1>
-          <p className="text-gray-600 text-lg">
+          <p className="text-slate-600 text-lg max-w-2xl">
             All users can view feedback here. You can only edit or delete your own feedback.
           </p>
         </div>
@@ -230,7 +236,7 @@ function FeedbackPage() {
 
         <div className="grid lg:grid-cols-3 gap-8">
           <div className="lg:col-span-1">
-            <div className="bg-white rounded-2xl shadow-lg p-8 sticky top-6">
+            <div className="bg-white/90 backdrop-blur rounded-2xl shadow-lg p-8 sticky top-6 border border-white/70">
               <h2 className="text-2xl font-bold text-slate-800 mb-6">
                 {editingId ? "Edit Your Feedback" : "Write Feedback"}
               </h2>
@@ -242,7 +248,7 @@ function FeedbackPage() {
                   </p>
                   <Link
                     to="/signin"
-                    className="inline-block bg-indigo-600 text-white px-5 py-3 rounded-xl font-semibold hover:bg-indigo-700 transition"
+                    className="inline-block bg-gradient-to-r from-indigo-600 to-blue-600 text-white px-5 py-3 rounded-xl font-semibold hover:from-indigo-700 hover:to-blue-700 transition shadow-md shadow-indigo-200"
                   >
                     Sign In
                   </Link>
@@ -257,7 +263,7 @@ function FeedbackPage() {
                       name="rating"
                       value={formData.rating}
                       onChange={handleChange}
-                      className="w-full border border-gray-300 rounded-lg px-4 py-3 outline-none focus:ring-2 focus:ring-indigo-500"
+                      className="w-full border border-slate-200 rounded-lg px-4 py-3 outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-200 bg-white/90"
                     >
                       <option value={5}>5 - Excellent</option>
                       <option value={4}>4 - Very Good</option>
@@ -277,7 +283,7 @@ function FeedbackPage() {
                       value={formData.message}
                       onChange={handleChange}
                       placeholder="Write your feedback here..."
-                      className="w-full border border-gray-300 rounded-lg px-4 py-3 outline-none focus:ring-2 focus:ring-indigo-500"
+                      className="w-full border border-slate-200 rounded-lg px-4 py-3 outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-200 bg-white/90"
                     />
                   </div>
 
@@ -285,7 +291,7 @@ function FeedbackPage() {
                     <button
                       type="submit"
                       disabled={submitting}
-                      className="flex-1 bg-indigo-600 text-white py-3 rounded-xl font-semibold hover:bg-indigo-700 transition disabled:opacity-60"
+                      className="flex-1 bg-gradient-to-r from-indigo-600 to-blue-600 text-white py-3 rounded-xl font-semibold hover:from-indigo-700 hover:to-blue-700 transition disabled:opacity-60 shadow-lg shadow-indigo-200/60"
                     >
                       {submitting
                         ? "Saving..."
@@ -301,7 +307,7 @@ function FeedbackPage() {
                           setEditingId(null);
                           setFormData({ rating: 5, message: "" });
                         }}
-                        className="px-4 py-3 bg-gray-200 text-gray-700 rounded-xl font-semibold hover:bg-gray-300 transition"
+                        className="px-4 py-3 bg-slate-200 text-slate-700 rounded-xl font-semibold hover:bg-slate-300 transition"
                       >
                         Clear
                       </button>
@@ -314,14 +320,14 @@ function FeedbackPage() {
 
           <div className="lg:col-span-2 space-y-6">
             {feedbackList.length === 0 ? (
-              <div className="bg-white rounded-2xl shadow-lg p-8 text-gray-600">
+              <div className="bg-white/90 backdrop-blur rounded-2xl shadow-lg p-8 text-gray-600 border border-white/70">
                 No feedback available yet.
               </div>
             ) : (
               feedbackList.map((feedback) => (
                 <div
                   key={feedback._id}
-                  className="bg-white rounded-2xl shadow-lg p-8"
+                  className="bg-white/90 backdrop-blur rounded-2xl shadow-lg p-8 border border-white/70"
                 >
                   <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-4">
                     <div>

@@ -50,115 +50,151 @@ function AdminDashboard() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
-      <nav className="bg-white shadow-md px-8 py-4 flex items-center justify-between">
-        <Link to="/" className="flex items-center gap-3">
+    <div className="min-h-screen bg-slate-50">
+      <nav className="bg-blue-950 px-6 md:px-10 py-4 flex items-center justify-between">
+        <Link to="/" className="flex items-center gap-3 text-white">
           <img
             src={logo}
             alt="CareerBridge Logo"
-            className="h-12 w-auto object-contain"
+            className="h-10 w-auto object-contain"
           />
-          <span className="text-2xl font-bold text-indigo-600">
-            Admin Portal
+          <span className="text-lg md:text-xl font-semibold">
+            CareerBridge - Admin Portal
           </span>
         </Link>
 
-        <div className="flex gap-4">
-          <Link to="/" className="text-gray-600 hover:text-indigo-600">
+        <div className="flex items-center gap-4 text-sm">
+          <Link to="/" className="text-blue-100 hover:text-white">
             User Portal
           </Link>
-          <Link to="/admin" className="text-indigo-600 font-semibold">
+          <Link to="/admin" className="text-white font-semibold">
             Admin Home
           </Link>
         </div>
       </nav>
 
-      <div className="flex flex-col items-center justify-center mt-20 px-4">
-        <h2 className="text-5xl font-extrabold text-gray-800 mb-4 text-center">
-          Admin <span className="text-indigo-600">Dashboard</span>
-        </h2>
-        <p className="text-lg text-gray-500 mb-8 text-center max-w-xl">
-          Manage your team&apos;s modules - Company Jobs, Student Profiles,
-          Applications, and Job Matching.
-        </p>
+      <section className="relative overflow-hidden">
+        <div className="admin-hero-bg" />
+        <div className="admin-blob admin-blob-left" />
+        <div className="admin-blob admin-blob-right" />
+        <div className="admin-dots" />
 
-        <div className="bg-white rounded-2xl shadow-lg p-6 w-full max-w-md text-center">
-          <h3 className="text-sm font-semibold text-gray-400 uppercase mb-2">
-            Backend Status
-          </h3>
-          {loading ? (
-            <p className="text-yellow-500 font-medium">Connecting...</p>
-          ) : (
-            <p
-              className={`text-lg font-bold ${
-                apiStatus === "CareerBridge API is running"
-                  ? "text-green-500"
-                  : "text-red-500"
-              }`}
-            >
-              {apiStatus}
+        <div className="max-w-6xl mx-auto px-6 md:px-10 py-14 md:py-16 grid gap-10 md:grid-cols-2 items-center relative z-10 text-white">
+          <div className="space-y-5">
+            <span className="inline-flex items-center gap-2 text-xs font-semibold bg-white/10 text-white px-3 py-1 rounded-full uppercase tracking-wide">
+              Admin Workspace
+            </span>
+            <h1 className="text-4xl md:text-5xl font-extrabold leading-tight admin-fade-up">
+              Admin <span className="text-orange-300">Dashboard</span>
+            </h1>
+            <p className="text-blue-100 max-w-lg">
+              Manage your team&apos;s modules - Company Jobs, Student Profiles,
+              Applications, and Job Matching.
             </p>
-          )}
-        </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-12 max-w-4xl w-full">
-          <div
+            <div className="bg-white/10 border border-white/15 rounded-2xl px-5 py-4 flex items-center gap-4 max-w-sm">
+              <span className="admin-pulse-dot" />
+              <div>
+                <p className="text-xs uppercase tracking-wide text-blue-100">
+                  Backend Status
+                </p>
+                {loading ? (
+                  <p className="text-sm font-semibold text-amber-200">
+                    Connecting...
+                  </p>
+                ) : (
+                  <p
+                    className={`text-sm font-semibold ${
+                      apiStatus === "CareerBridge API is running"
+                        ? "text-emerald-300"
+                        : "text-rose-300"
+                    }`}
+                  >
+                    {apiStatus}
+                  </p>
+                )}
+              </div>
+            </div>
+          </div>
+
+          <div className="admin-illustration company-float">
+            <div className="admin-ill-card" />
+            <div className="admin-ill-ring" />
+            <div className="admin-ill-line" />
+          </div>
+        </div>
+      </section>
+
+      <section className="max-w-6xl mx-auto px-6 md:px-10 -mt-12 pb-16 relative z-20">
+        <div className="grid gap-6 md:grid-cols-2 admin-stagger">
+          <button
+            type="button"
             onClick={() => navigate("/admin/student-profile")}
-            className="bg-white rounded-xl shadow p-6 border-l-4 border-blue-500 cursor-pointer hover:shadow-lg hover:bg-blue-50 transition-all duration-200 transform hover:scale-105"
+            className="admin-card"
           >
-            <h3 className="text-lg font-bold text-blue-600 mb-1">
-              StudentProfile
-            </h3>
-            <p className="text-gray-500 text-sm">
+            <div className="admin-card-header">
+              <span className="admin-card-icon">SP</span>
+              <span className="admin-card-arrow">→</span>
+            </div>
+            <h3 className="text-lg font-bold text-slate-900">StudentProfile</h3>
+            <p className="text-sm text-slate-500">
               Member 1 — Student Account + Profile Management
             </p>
-            <p className="text-xs text-blue-500 mt-2 font-semibold">
-              ✨ Click to Enter →
+            <p className="text-xs text-orange-500 mt-2 font-semibold">
+              Click to Enter
             </p>
-          </div>
+          </button>
 
-          <div
+          <button
+            type="button"
             onClick={() => navigate("/admin/company")}
-            className="bg-white rounded-xl shadow p-6 border-l-4 border-indigo-500 cursor-pointer hover:shadow-lg hover:bg-indigo-50 transition-all duration-200 transform hover:scale-105"
+            className="admin-card"
           >
-            <h3 className="text-lg font-bold text-indigo-600 mb-1">
-              CompanyJobs
-            </h3>
-            <p className="text-gray-500 text-sm">
+            <div className="admin-card-header">
+              <span className="admin-card-icon">CJ</span>
+              <span className="admin-card-arrow">→</span>
+            </div>
+            <h3 className="text-lg font-bold text-slate-900">CompanyJobs</h3>
+            <p className="text-sm text-slate-500">
               Member 2 — Company Dashboard + Job Posting + Interview Slots
             </p>
-            <p className="text-xs text-indigo-500 mt-2 font-semibold">
-              ✨ Click to Enter →
+            <p className="text-xs text-orange-500 mt-2 font-semibold">
+              Click to Enter
             </p>
-          </div>
+          </button>
 
-          <div className="bg-white rounded-xl shadow p-6 border-l-4 border-purple-500 opacity-90">
-            <h3 className="text-lg font-bold text-purple-600 mb-1">
-              JobMatch
-            </h3>
-            <p className="text-gray-500 text-sm">
+          <div className="admin-card">
+            <div className="admin-card-header">
+              <span className="admin-card-icon">JM</span>
+              <span className="admin-card-chip">User portal</span>
+            </div>
+            <h3 className="text-lg font-bold text-slate-900">JobMatch</h3>
+            <p className="text-sm text-slate-500">
               Member 3 — Job Search + Smart Matching + CV Generator
             </p>
           </div>
 
-          <div
+          <button
+            type="button"
             onClick={() => navigate("/admin/applications")}
-            className="bg-white rounded-xl shadow p-6 border-l-4 border-pink-500 cursor-pointer hover:shadow-lg hover:bg-pink-50 transition-all duration-200 transform hover:scale-105"
+            className="admin-card"
           >
-            <h3 className="text-lg font-bold text-pink-600 mb-1">
-              Applications
-            </h3>
-            <p className="text-gray-500 text-sm">
+            <div className="admin-card-header">
+              <span className="admin-card-icon">AP</span>
+              <span className="admin-card-arrow">→</span>
+            </div>
+            <h3 className="text-lg font-bold text-slate-900">Applications</h3>
+            <p className="text-sm text-slate-500">
               Member 4 — Applications + Interview Booking + Payment
             </p>
-            <p className="text-xs text-pink-500 mt-2 font-semibold">
-              ✨ Click to Enter →
+            <p className="text-xs text-orange-500 mt-2 font-semibold">
+              Click to Enter
             </p>
-          </div>
+          </button>
         </div>
-      </div>
+      </section>
 
-      <footer className="mt-20 py-6 text-center text-gray-400 text-sm">
+      <footer className="py-8 text-center text-gray-400 text-sm">
         © 2026 CareerBridge — ITPM Group Project
       </footer>
     </div>
@@ -321,75 +357,79 @@ function MainFooter() {
   );
 }
 
+function UserTopNav({ currentUser, checkingAuth, handleLogout }) {
+  return (
+    <nav className="bg-[#1f3a8a] px-8 py-4 flex items-center justify-between shadow-md border-b border-blue-700">
+      <Link to="/" className="flex items-center">
+        <img
+          src={logo}
+          alt="CareerBridge Logo"
+          className="h-16 w-auto object-contain"
+        />
+      </Link>
+
+      <div className="flex items-center gap-6 flex-wrap">
+        <Link to="/" className="text-white font-medium transition-colors duration-200 ease-out hover:text-orange-200">
+          Home
+        </Link>
+        <Link
+          to="/jobs"
+          className="text-white font-medium transition-colors duration-200 ease-out hover:text-orange-200"
+        >
+          Jobs
+        </Link>
+        <Link
+          to="/smart-matching"
+          className="text-white font-medium transition-colors duration-200 ease-out hover:text-orange-200"
+        >
+          Smart Matching
+        </Link>
+        <Link
+          to="/cv-generator"
+          className="text-white font-medium transition-colors duration-200 ease-out hover:text-orange-200"
+        >
+          CV Generator
+        </Link>
+
+        {currentUser && (
+          <Link
+            to="/my-applications"
+            className="text-white font-medium transition-colors duration-200 ease-out hover:text-orange-200"
+          >
+            My Applications
+          </Link>
+        )}
+      </div>
+
+      <div className="flex items-center gap-4">
+        {checkingAuth ? (
+          <span className="text-white">Loading...</span>
+        ) : currentUser ? (
+          <UserMenu currentUser={currentUser} onLogout={handleLogout} />
+        ) : (
+          <>
+            <Link
+              to="/signin"
+              className="text-white font-medium transition-colors duration-200 ease-out hover:text-orange-200"
+            >
+              Sign In
+            </Link>
+            <Link
+              to="/signup"
+              className="bg-orange-500 text-white px-4 py-2 rounded-lg font-semibold hover:bg-orange-600 transition"
+            >
+              Sign Up
+            </Link>
+          </>
+        )}
+      </div>
+    </nav>
+  );
+}
+
 function UserPortal({ currentUser, checkingAuth, handleLogout }) {
   return (
     <div className="min-h-screen bg-white flex flex-col">
-      <nav className="bg-[#1f3a8a] px-8 py-4 flex items-center justify-between shadow-md border-b border-blue-700">
-        <Link to="/" className="flex items-center">
-          <img
-            src={logo}
-            alt="CareerBridge Logo"
-            className="h-16 w-auto object-contain"
-          />
-        </Link>
-
-        <div className="hidden md:flex items-center gap-8">
-          <Link to="/" className="text-white font-medium hover:text-orange-300">
-            Home
-          </Link>
-          <Link
-            to="/jobs"
-            className="text-white font-medium hover:text-orange-300"
-          >
-            Jobs
-          </Link>
-          <Link
-            to="/smart-matching"
-            className="text-white font-medium hover:text-orange-300"
-          >
-            Smart Matching
-          </Link>
-          <Link
-            to="/cv-generator"
-            className="text-white font-medium hover:text-orange-300"
-          >
-            CV Generator
-          </Link>
-
-          {currentUser && (
-            <Link
-              to="/my-applications"
-              className="text-white font-medium hover:text-orange-300"
-            >
-              My Applications
-            </Link>
-          )}
-        </div>
-
-        <div className="flex items-center gap-4">
-          {checkingAuth ? (
-            <span className="text-white">Loading...</span>
-          ) : currentUser ? (
-            <UserMenu currentUser={currentUser} onLogout={handleLogout} />
-          ) : (
-            <>
-              <Link
-                to="/signin"
-                className="text-white font-medium hover:text-orange-300"
-              >
-                Sign In
-              </Link>
-              <Link
-                to="/signup"
-                className="bg-orange-500 text-white px-4 py-2 rounded-lg font-semibold hover:bg-orange-600 transition"
-              >
-                Sign Up
-              </Link>
-            </>
-          )}
-        </div>
-      </nav>
-
       <div className="flex-1">
         <StudentHome currentUser={currentUser} />
       </div>
@@ -418,6 +458,12 @@ function AppContent() {
   ];
 
   const publicAuthRoutes = ["/signin", "/signup", "/forgot-password"];
+
+  const shouldShowNavbar =
+    !publicAuthRoutes.includes(location.pathname) &&
+    location.pathname !== "/change-password" &&
+    !location.pathname.startsWith("/reset-password/") &&
+    !location.pathname.startsWith("/admin");
 
   const shouldHideChatbot =
     hideChatbotRoutes.includes(location.pathname) ||
@@ -492,39 +538,48 @@ function AppContent() {
 
   return (
     <>
-      <Routes>
-        <Route
-          path="/"
-          element={
-            <UserPortal
-              currentUser={currentUser}
-              checkingAuth={checkingAuth}
-              handleLogout={handleLogout}
-            />
-          }
+      {shouldShowNavbar && (
+        <UserTopNav
+          currentUser={currentUser}
+          checkingAuth={checkingAuth}
+          handleLogout={handleLogout}
         />
-        <Route path="/jobs" element={<JobSearch />} />
-        <Route path="/jobs/:id" element={<JobDetails />} />
-        <Route path="/smart-matching" element={<SmartMatching />} />
-        <Route path="/cv-generator" element={<CVGenerator />} />
-        <Route path="/profile" element={<ProfilePage />} />
-        <Route path="/profile/edit" element={<EditProfilePage />} />
-        <Route path="/change-password" element={<ChangePassword />} />
-        <Route path="/signin" element={<SignIn />} />
-        <Route path="/signup" element={<SignUp />} />
-        <Route path="/forgot-password" element={<ForgotPassword />} />
-        <Route path="/reset-password/:token" element={<ResetPassword />} />
-        <Route path="/my-applications" element={<MyApplications />} />
-        <Route path="/admin/applications" element={<ApplicationsDashboard />} />
-        <Route path="/feedback" element={<FeedbackPage />} />
-        <Route path="/admin" element={<AdminDashboard />} />
-        <Route path="/admin/company" element={<CompanyJobsMain />} />
-        <Route
-          path="/admin/student-profile"
-          element={<StudentProfileDashboard />}
-        />
-        <Route path="/contact" element={<ContactUsPage />} />
-      </Routes>
+      )}
+      <div key={location.pathname} className="page-fade">
+        <Routes>
+          <Route
+            path="/"
+            element={
+              <UserPortal
+                currentUser={currentUser}
+                checkingAuth={checkingAuth}
+                handleLogout={handleLogout}
+              />
+            }
+          />
+          <Route path="/jobs" element={<JobSearch />} />
+          <Route path="/jobs/:id" element={<JobDetails />} />
+          <Route path="/smart-matching" element={<SmartMatching />} />
+          <Route path="/cv-generator" element={<CVGenerator />} />
+          <Route path="/profile" element={<ProfilePage />} />
+          <Route path="/profile/edit" element={<EditProfilePage />} />
+          <Route path="/change-password" element={<ChangePassword />} />
+          <Route path="/signin" element={<SignIn />} />
+          <Route path="/signup" element={<SignUp />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/reset-password/:token" element={<ResetPassword />} />
+          <Route path="/my-applications" element={<MyApplications />} />
+          <Route path="/admin/applications" element={<ApplicationsDashboard />} />
+          <Route path="/feedback" element={<FeedbackPage />} />
+          <Route path="/admin" element={<AdminDashboard />} />
+          <Route path="/admin/company" element={<CompanyJobsMain />} />
+          <Route
+            path="/admin/student-profile"
+            element={<StudentProfileDashboard />}
+          />
+          <Route path="/contact" element={<ContactUsPage />} />
+        </Routes>
+      </div>
 
       {!shouldHideChatbot && <ChatbotWidget />}
     </>
