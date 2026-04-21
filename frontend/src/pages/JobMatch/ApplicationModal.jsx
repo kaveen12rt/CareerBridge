@@ -11,9 +11,40 @@ import { XMarkIcon, BriefcaseIcon, MapPinIcon } from '@heroicons/react/24/outlin
  *   onSuccess  – Called with the newly created application object on success.
  */
 const ApplicationModal = ({ job, studentId, onClose, onSuccess }) => {
+  const [applicantName, setApplicantName] = useState('');
+  const [applicantEmail, setApplicantEmail] = useState('');
+  const [applicantPhone, setApplicantPhone] = useState('');
   const [coverLetter, setCoverLetter] = useState('');
+  const [resumeFileName, setResumeFileName] = useState('');
+  const [resumeFileData, setResumeFileData] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+
+  const handleResumeChange = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) {
+      setResumeFileName('');
+      setResumeFileData('');
+      return;
+    }
+
+    const maxSizeMb = 2;
+    if (file.size > maxSizeMb * 1024 * 1024) {
+      setError(`Resume file must be under ${maxSizeMb}MB.`);
+      e.target.value = '';
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      setResumeFileName(file.name);
+      setResumeFileData(String(reader.result || ''));
+    };
+    reader.onerror = () => {
+      setError('Failed to read the selected resume file.');
+    };
+    reader.readAsDataURL(file);
+  };
 
   const handleSubmit = async () => {
     if (!studentId) {
@@ -29,7 +60,16 @@ const ApplicationModal = ({ job, studentId, onClose, onSuccess }) => {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
-        body: JSON.stringify({ studentId, jobId: job._id, coverLetter }),
+        body: JSON.stringify({
+          studentId,
+          jobId: job._id,
+          coverLetter,
+          applicantName,
+          applicantEmail,
+          applicantPhone,
+          resumeFileName,
+          resumeFileData,
+        }),
       });
 
       const data = await res.json();
@@ -54,11 +94,11 @@ const ApplicationModal = ({ job, studentId, onClose, onSuccess }) => {
     >
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg">
         {/* Header */}
-        <div className="bg-gradient-to-r from-cyan-500 to-sky-600 text-white p-6 rounded-t-2xl flex items-start justify-between">
+        <div className="bg-gradient-to-r from-blue-900 to-blue-800 text-white p-6 rounded-t-2xl flex items-start justify-between">
           <div>
             <h2 className="text-xl font-bold">Apply for Position</h2>
-            <p className="text-cyan-100 mt-1 font-semibold text-lg">{job.title}</p>
-            <div className="flex items-center gap-4 mt-1 text-cyan-200 text-sm">
+            <p className="text-blue-200 mt-1 font-semibold text-lg">{job.title}</p>
+            <div className="flex items-center gap-4 mt-1 text-blue-300 text-sm">
               <span className="flex items-center gap-1">
                 <BriefcaseIcon className="w-4 h-4" />
                 {job.companyName}
@@ -73,7 +113,7 @@ const ApplicationModal = ({ job, studentId, onClose, onSuccess }) => {
           </div>
           <button
             onClick={onClose}
-            className="ml-4 text-cyan-200 hover:text-white transition-colors"
+            className="ml-4 text-blue-300 hover:text-white transition-colors"
           >
             <XMarkIcon className="w-6 h-6" />
           </button>
@@ -95,6 +135,57 @@ const ApplicationModal = ({ job, studentId, onClose, onSuccess }) => {
             first if you have reached the limit.
           </div>
 
+          <label className="block text-sm font-semibold text-gray-700 mb-1">
+            Full Name
+          </label>
+          <input
+            type="text"
+            value={applicantName}
+            onChange={(e) => setApplicantName(e.target.value)}
+            disabled={loading}
+            className="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-400 disabled:opacity-60"
+            placeholder="Your full name"
+          />
+
+          <label className="block text-sm font-semibold text-gray-700 mb-1 mt-4">
+            Email
+          </label>
+          <input
+            type="email"
+            value={applicantEmail}
+            onChange={(e) => setApplicantEmail(e.target.value)}
+            disabled={loading}
+            className="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-400 disabled:opacity-60"
+            placeholder="you@email.com"
+          />
+
+          <label className="block text-sm font-semibold text-gray-700 mb-1 mt-4">
+            Phone Number
+          </label>
+          <input
+            type="tel"
+            value={applicantPhone}
+            onChange={(e) => setApplicantPhone(e.target.value)}
+            disabled={loading}
+            className="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-400 disabled:opacity-60"
+            placeholder="e.g., +94 7X XXX XXXX"
+          />
+
+          <label className="block text-sm font-semibold text-gray-700 mb-1 mt-4">
+            Upload CV
+            <span className="font-normal text-gray-400"> (PDF/DOC, max 2MB)</span>
+          </label>
+          <input
+            type="file"
+            accept=".pdf,.doc,.docx"
+            onChange={handleResumeChange}
+            disabled={loading}
+            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-400 disabled:opacity-60"
+          />
+          {resumeFileName ? (
+            <p className="text-xs text-gray-500 mt-1">Selected: {resumeFileName}</p>
+          ) : null}
+
           {/* Cover letter */}
           <label className="block text-sm font-semibold text-gray-700 mb-1">
             Cover Letter{' '}
@@ -106,7 +197,7 @@ const ApplicationModal = ({ job, studentId, onClose, onSuccess }) => {
             maxLength={2000}
             rows={5}
             disabled={loading}
-            className="w-full border border-gray-300 rounded-lg px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-400 resize-none disabled:opacity-60"
+            className="w-full border border-gray-300 rounded-lg px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none disabled:opacity-60"
             placeholder="Briefly describe why you are a great fit for this role…"
           />
           <p className="text-xs text-gray-400 text-right mt-1">{coverLetter.length} / 2000</p>
@@ -123,7 +214,7 @@ const ApplicationModal = ({ job, studentId, onClose, onSuccess }) => {
             <button
               onClick={handleSubmit}
               disabled={loading || !studentId}
-              className="flex-1 py-3 bg-lime-500 text-white rounded-lg font-bold hover:bg-lime-600 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+              className="flex-1 py-3 bg-amber-500 text-white rounded-lg font-bold hover:bg-amber-600 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
             >
               {loading ? 'Submitting…' : 'Submit Application'}
             </button>

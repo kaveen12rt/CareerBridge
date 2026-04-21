@@ -17,7 +17,7 @@ const STATUS_CONFIG = {
   pending:              { label: 'Pending',              bg: 'bg-yellow-100', text: 'text-yellow-800', border: 'border-yellow-300' },
   reviewing:            { label: 'Under Review',         bg: 'bg-blue-100',   text: 'text-blue-800',   border: 'border-blue-300'   },
   accepted:             { label: 'Accepted',             bg: 'bg-green-100',  text: 'text-green-800',  border: 'border-green-300'  },
-  interview_scheduled:  { label: 'Interview Scheduled',  bg: 'bg-indigo-100', text: 'text-indigo-800', border: 'border-indigo-300' },
+  interview_scheduled:  { label: 'Interview Scheduled',  bg: 'bg-blue-100',   text: 'text-blue-800',   border: 'border-blue-300'   },
   rejected:             { label: 'Rejected',             bg: 'bg-red-100',    text: 'text-red-800',    border: 'border-red-300'    },
   withdrawn:            { label: 'Withdrawn',            bg: 'bg-gray-100',   text: 'text-gray-600',   border: 'border-gray-300'   },
 };
@@ -172,7 +172,7 @@ const MyApplications = () => {
   if (checkingAuth) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-500" />
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-800" />
       </div>
     );
   }
@@ -185,7 +185,7 @@ const MyApplications = () => {
           <p className="text-gray-500 mb-4">Please sign in to view your applications.</p>
           <button
             onClick={() => navigate('/signin')}
-            className="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
+            className="px-6 py-2 bg-blue-800 text-white rounded-lg hover:bg-blue-900"
           >
             Sign In
           </button>
@@ -218,17 +218,17 @@ const MyApplications = () => {
       )}
 
       {/* Page header */}
-      <div className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white">
+      <div className="bg-gradient-to-r from-blue-900 to-blue-800 text-white">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <button
             onClick={() => navigate('/jobs')}
-            className="mb-4 inline-flex items-center text-indigo-200 hover:text-white font-medium text-sm"
+            className="mb-4 inline-flex items-center text-blue-200 hover:text-white font-medium text-sm"
           >
             <ArrowLeftIcon className="w-4 h-4 mr-1.5" />
             Browse Jobs
           </button>
           <h1 className="text-3xl font-extrabold">My Applications</h1>
-          <p className="text-indigo-200 mt-1 text-sm">
+          <p className="text-blue-200 mt-1 text-sm">
             {active.length} active &middot; {closed.length} closed
           </p>
         </div>
@@ -238,7 +238,7 @@ const MyApplications = () => {
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 mt-6 space-y-8">
         {loadingApps ? (
           <div className="flex justify-center py-20">
-            <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-indigo-500" />
+              <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-800" />
           </div>
         ) : applications.length === 0 ? (
           <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-12 text-center">
@@ -247,7 +247,7 @@ const MyApplications = () => {
             <p className="text-gray-400 mb-6">Start applying to jobs to track your progress here.</p>
             <button
               onClick={() => navigate('/jobs')}
-              className="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
+              className="px-6 py-2 bg-blue-800 text-white rounded-lg hover:bg-blue-900"
             >
               Find Jobs
             </button>
@@ -371,7 +371,7 @@ const PaymentSection = ({ applicationId, onPaymentUpdate }) => {
         <>
           <button
             onClick={() => setShowConfirm(true)}
-            className="ml-2 px-3 py-1.5 text-xs font-semibold bg-indigo-600 text-white rounded-full hover:bg-indigo-700 transition"
+            className="ml-2 px-3 py-1.5 text-xs font-semibold bg-amber-500 text-white rounded-full hover:bg-amber-600 transition"
           >
             Pay Now
           </button>
@@ -393,7 +393,7 @@ const PaymentSection = ({ applicationId, onPaymentUpdate }) => {
                   <button
                     onClick={handlePay}
                     disabled={paying}
-                    className="px-4 py-2 text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg transition disabled:opacity-60"
+                    className="px-4 py-2 text-sm font-semibold text-white bg-amber-500 hover:bg-amber-600 rounded-lg transition disabled:opacity-60"
                   >
                     {paying ? 'Processing…' : 'Confirm Payment'}
                   </button>
@@ -444,13 +444,13 @@ const ApplicationCard = ({ app, onWithdraw, onBookSlot, withdrawingId, onPayment
 
           {/* Interview slot info */}
           {slot && (
-            <div className="mt-3 p-3 bg-indigo-50 border border-indigo-200 rounded-lg text-sm">
-              <p className="font-semibold text-indigo-700 flex items-center gap-1">
+            <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-lg text-sm">
+              <p className="font-semibold text-blue-700 flex items-center gap-1">
                 <ClockIcon className="w-4 h-4" />
                 Interview: {fmtDateTime(slot.date, slot.time)} &middot; {slot.duration} min
               </p>
               {(slot.location || slot.meetingLink) && (
-                <p className="text-indigo-500 mt-0.5 truncate">{slot.location || slot.meetingLink}</p>
+                <p className="text-blue-500 mt-0.5 truncate">{slot.location || slot.meetingLink}</p>
               )}
             </div>
           )}
@@ -474,7 +474,7 @@ const ApplicationCard = ({ app, onWithdraw, onBookSlot, withdrawingId, onPayment
           {app.status === 'accepted' && (
             <button
               onClick={onBookSlot}
-              className="px-4 py-2 bg-indigo-600 text-white text-sm font-semibold rounded-lg hover:bg-indigo-700 transition-colors"
+              className="px-4 py-2 bg-amber-500 text-white text-sm font-semibold rounded-lg hover:bg-amber-600 transition-colors"
             >
               Book Interview
             </button>

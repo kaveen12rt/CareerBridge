@@ -134,16 +134,16 @@ const JobManagement = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
+    <div className="min-h-screen bg-slate-50 p-6">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Job Management</h1>
-          <p className="text-gray-600 mt-2">View, edit, and manage your job postings</p>
+        <div className="mb-8 company-fade-up">
+          <h1 className="text-3xl font-bold text-blue-900">Job Management</h1>
+          <p className="text-slate-600 mt-2">View, edit, and manage your job postings</p>
         </div>
 
         {/* Filters */}
-        <div className="bg-white rounded-lg shadow-md p-6 mb-6">
+        <div className="bg-white rounded-2xl shadow-lg border border-blue-100 p-6 mb-6 company-card">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -154,7 +154,7 @@ const JobManagement = () => {
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 placeholder="Search by title, company, department, location, or type..."
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-blue-200 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
             <div>
@@ -164,7 +164,7 @@ const JobManagement = () => {
               <select
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-blue-200 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <option value="all">All Statuses</option>
                 <option value="active">Active</option>
@@ -175,7 +175,7 @@ const JobManagement = () => {
             <div className="flex items-end">
               <button
                 onClick={fetchJobs}
-                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="px-4 py-2 bg-blue-900 text-white rounded-md hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 Refresh
               </button>
@@ -184,33 +184,33 @@ const JobManagement = () => {
         </div>
 
         {/* Jobs List */}
-        <div className="bg-white rounded-lg shadow-md overflow-hidden">
-          <div className="px-6 py-4 border-b border-gray-200">
-            <h2 className="text-lg font-semibold text-gray-900">
+        <div className="bg-white rounded-2xl shadow-lg border border-blue-100 overflow-hidden company-card">
+          <div className="px-6 py-4 border-b border-blue-100">
+            <h2 className="text-lg font-semibold text-blue-900">
               Your Jobs ({filteredJobs.length})
             </h2>
           </div>
           
           <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
+              <thead className="bg-blue-50">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-blue-700 uppercase tracking-wider">
                     Job Details
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-blue-700 uppercase tracking-wider">
                     Location & Type
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-blue-700 uppercase tracking-wider">
                     Applications
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-blue-700 uppercase tracking-wider">
                     Quality
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-blue-700 uppercase tracking-wider">
                     Status
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-blue-700 uppercase tracking-wider">
                     Actions
                   </th>
                 </tr>
@@ -220,7 +220,7 @@ const JobManagement = () => {
                   (() => {
                     const quality = analyzeJobPostQuality(job);
                     return (
-                  <tr key={job._id} className="hover:bg-gray-50">
+                  <tr key={job._id} className="hover:bg-blue-50">
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-start gap-3">
                         <div className="w-10 h-10 rounded-md overflow-hidden border border-gray-200 bg-gray-50 flex items-center justify-center text-xs font-semibold text-gray-600 flex-shrink-0">
@@ -235,22 +235,22 @@ const JobManagement = () => {
                           )}
                         </div>
                         <div>
-                          <div className="text-sm font-medium text-gray-900">{job.title}</div>
-                          <div className="text-sm text-gray-500">{job.companyName || 'N/A'}</div>
-                          <div className="text-sm text-gray-500">{job.department}</div>
-                          <div className="text-xs text-gray-400">
+                          <div className="text-sm font-medium text-blue-900">{job.title}</div>
+                          <div className="text-sm text-slate-500">{job.companyName || 'N/A'}</div>
+                          <div className="text-sm text-slate-500">{job.department}</div>
+                          <div className="text-xs text-slate-400">
                             Posted: {new Date(job.createdAt).toLocaleDateString()}
                           </div>
                         </div>
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">{job.location}</div>
-                      <div className="text-sm text-gray-500 capitalize">{job.type}</div>
+                      <div className="text-sm text-blue-900">{job.location}</div>
+                      <div className="text-sm text-slate-500 capitalize">{job.type}</div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">{job.applicationsCount || 0} applications</div>
-                      <div className="text-sm text-gray-500">{job.interviewsCount || 0} interviews</div>
+                      <div className="text-sm text-blue-900">{job.applicationsCount || 0} applications</div>
+                      <div className="text-sm text-slate-500">{job.interviewsCount || 0} interviews</div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex flex-col gap-1">
@@ -269,7 +269,7 @@ const JobManagement = () => {
                       <div className="flex items-center space-x-2">
                         <button
                           onClick={() => setEditingJob(job)}
-                          className="text-blue-600 hover:text-blue-900 p-1 rounded hover:bg-blue-50"
+                          className="text-blue-900 hover:text-blue-700 p-1 rounded hover:bg-blue-50"
                           title="Edit Job"
                         >
                           <PencilIcon className="h-4 w-4" />
@@ -318,10 +318,10 @@ const JobManagement = () => {
 
         {/* Edit Job Modal */}
         {editingJob && (
-          <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-            <div className="relative top-10 mx-auto p-5 border max-w-4xl shadow-lg rounded-md bg-white mb-10">
+          <div className="fixed inset-0 bg-slate-900/60 overflow-y-auto h-full w-full z-50">
+            <div className="relative top-10 mx-auto p-5 border border-blue-100 max-w-4xl shadow-2xl rounded-2xl bg-white mb-10">
               <div className="mt-3">
-                <h3 className="text-lg font-medium text-gray-900 mb-4">Edit Job</h3>
+                <h3 className="text-lg font-medium text-blue-900 mb-4">Edit Job</h3>
                 <JobEditForm
                   job={editingJob}
                   onSave={(updatedData) => handleUpdateJob(editingJob._id, updatedData)}
@@ -342,6 +342,7 @@ const JobEditForm = ({ job, onSave, onCancel, loading }) => {
   const [formData, setFormData] = useState({
     companyName: job.companyName || '',
     companyImage: job.companyImage || '',
+    companyEmail: job.companyEmail || '',
     title: job.title || '',
     department: job.department || '',
     location: job.location || '',
@@ -480,6 +481,18 @@ const JobEditForm = ({ job, onSave, onCancel, loading }) => {
             onChange={handleChange}
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             required
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Company Email</label>
+          <input
+            type="email"
+            name="companyEmail"
+            value={formData.companyEmail}
+            onChange={handleChange}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            placeholder="e.g., careers@company.com"
           />
         </div>
 
@@ -696,18 +709,18 @@ const JobEditForm = ({ job, onSave, onCancel, loading }) => {
       </div>
 
       {/* Submit Buttons */}
-      <div className="flex justify-end space-x-2 pt-4 border-t">
+      <div className="flex justify-end space-x-2 pt-4 border-t border-blue-100">
         <button
           type="button"
           onClick={onCancel}
-          className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
+          className="px-4 py-2 text-sm font-medium text-slate-700 bg-white border border-blue-200 rounded-md hover:bg-blue-50"
         >
           Cancel
         </button>
         <button
           type="submit"
           disabled={loading}
-          className="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 disabled:opacity-50"
+          className="px-4 py-2 text-sm font-medium text-white bg-orange-500 border border-transparent rounded-md hover:bg-orange-600 disabled:opacity-50"
         >
           {loading ? 'Saving...' : 'Save Changes'}
         </button>

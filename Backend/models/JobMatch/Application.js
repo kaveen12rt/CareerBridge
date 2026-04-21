@@ -47,6 +47,11 @@ const applicationSchema = new mongoose.Schema(
       trim: true,
       maxlength: [2000, "Cover letter cannot exceed 2000 characters"],
     },
+    applicantName: { type: String, trim: true },
+    applicantEmail: { type: String, trim: true, lowercase: true },
+    applicantPhone: { type: String, trim: true },
+    resumeFileName: { type: String, trim: true },
+    resumeFileData: { type: String, trim: true },
     // Timestamped when the student explicitly withdraws.
     withdrawnAt: { type: Date, default: null },
     // Free-text note added by the company (reason for status changes etc.).

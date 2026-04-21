@@ -143,12 +143,12 @@ const JobPostingForm = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 py-6">
+    <div className="min-h-screen bg-slate-50 py-6">
       <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="bg-white shadow-sm rounded-lg">
-          <div className="px-6 py-4 border-b border-gray-200">
-            <h1 className="text-2xl font-bold text-gray-900">Post a New Job</h1>
-            <p className="text-gray-600 mt-1">Fill in the details to create a job posting</p>
+        <div className="bg-white shadow-lg border border-blue-100 rounded-2xl company-card company-fade-up">
+          <div className="px-6 py-4 border-b border-blue-100">
+            <h1 className="text-2xl font-bold text-blue-900">Post a New Job</h1>
+            <p className="text-slate-600 mt-1">Fill in the details to create a job posting</p>
           </div>
 
           <div className="px-6 pt-6">
@@ -206,6 +206,7 @@ const JobPostingForm = () => {
                   placeholder="e.g., CareerBridge"
                 />
               </div>
+
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -425,7 +426,7 @@ const JobPostingForm = () => {
                 <button
                   type="button"
                   onClick={() => addArrayField('skills')}
-                  className="flex items-center text-blue-600 hover:text-blue-700"
+                  className="flex items-center text-blue-900 hover:text-blue-800"
                 >
                   <PlusIcon className="h-4 w-4 mr-1" />
                   Add Skill
@@ -434,11 +435,11 @@ const JobPostingForm = () => {
             </div>
 
             {/* Submit Button */}
-            <div className="flex justify-end pt-6 border-t border-gray-200">
+            <div className="flex justify-end pt-6 border-t border-blue-100">
               <button
                 type="submit"
                 disabled={loading}
-                className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-6 py-2 bg-orange-500 text-white rounded-md hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-orange-400 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {loading ? 'Posting Job...' : 'Post Job'}
               </button>

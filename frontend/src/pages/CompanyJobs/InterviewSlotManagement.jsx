@@ -228,26 +228,26 @@ const InterviewSlotManagement = () => {
   const booked    = slots.filter((s) => s.isBooked);
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
+    <div className="min-h-screen bg-slate-50 p-6">
       <div className="max-w-4xl mx-auto space-y-6">
 
         {/* Page header */}
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Interview Slots</h1>
-          <p className="text-gray-500 mt-1 text-sm">
+        <div className="company-fade-up">
+          <h1 className="text-3xl font-bold text-blue-900">Interview Slots</h1>
+          <p className="text-slate-500 mt-1 text-sm">
             Create and manage interview time slots for your job postings.
           </p>
         </div>
 
         {/* Job selector */}
-        <div className="bg-white rounded-xl shadow-sm p-5">
+        <div className="bg-white rounded-2xl shadow-lg border border-blue-100 p-5 company-card">
           <label className="block text-sm font-semibold text-gray-700 mb-2">
             Select Job Posting
           </label>
           {loading ? (
-            <p className="text-gray-400 text-sm">Loading jobs…</p>
+            <p className="text-slate-400 text-sm">Loading jobs…</p>
           ) : jobs.length === 0 ? (
-            <p className="text-gray-400 text-sm">
+            <p className="text-slate-400 text-sm">
               No jobs found. Post a job first from the company dashboard.
             </p>
           ) : (
@@ -261,7 +261,7 @@ const InterviewSlotManagement = () => {
                   setForm(EMPTY_FORM);
                   setErrors({});
                 }}
-                className="w-full border border-gray-200 rounded-xl px-4 py-2.5 pr-10 text-sm text-gray-800 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none"
+                className="w-full border border-blue-200 rounded-xl px-4 py-2.5 pr-10 text-sm text-blue-900 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none"
               >
                 <option value="">— Choose a job —</option>
                 {jobs.map((j) => (
@@ -270,7 +270,7 @@ const InterviewSlotManagement = () => {
                   </option>
                 ))}
               </select>
-              <ChevronDownIcon className="w-4 h-4 text-gray-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+              <ChevronDownIcon className="w-4 h-4 text-blue-300 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
             </div>
           )}
           {errors.job && <p className="text-red-500 text-xs mt-1">{errors.job}</p>}
@@ -281,16 +281,16 @@ const InterviewSlotManagement = () => {
           <>
             {/* Slot list header */}
             <div className="flex items-center justify-between">
-              <h2 className="text-lg font-semibold text-gray-800">
+              <h2 className="text-lg font-semibold text-blue-900">
                 Slots for&nbsp;
-                <span className="text-blue-600">{selectedJob.title}</span>
+                <span className="text-orange-500">{selectedJob.title}</span>
                 {slotsLoading && (
                   <ArrowPathIcon className="inline w-4 h-4 ml-2 animate-spin text-blue-400" />
                 )}
               </h2>
               <button
                 onClick={() => { setShowForm((v) => !v); setErrors({}); setForm(EMPTY_FORM); }}
-                className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white text-sm font-semibold rounded-xl hover:bg-blue-700 transition"
+                className="flex items-center gap-2 px-4 py-2 bg-orange-500 text-white text-sm font-semibold rounded-xl hover:bg-orange-600 transition"
               >
                 <PlusIcon className="w-4 h-4" />
                 {showForm ? 'Cancel' : 'Add Slot'}
@@ -299,8 +299,8 @@ const InterviewSlotManagement = () => {
 
             {/* Add Slot form */}
             {showForm && (
-              <div className="bg-white rounded-xl shadow-sm p-6 border-2 border-blue-100">
-                <h3 className="text-base font-bold text-gray-800 mb-5">
+              <div className="bg-white rounded-2xl shadow-lg p-6 border border-blue-100">
+                <h3 className="text-base font-bold text-blue-900 mb-5">
                   New Interview Slot
                 </h3>
                 <form onSubmit={handleSubmit} className="space-y-5" noValidate>
@@ -316,7 +316,7 @@ const InterviewSlotManagement = () => {
                         type="date"
                         min={new Date().toISOString().split('T')[0]}
                         {...field('date')}
-                        className={`w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.date ? 'border-red-400' : 'border-gray-200'}`}
+                        className={`w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.date ? 'border-red-400' : 'border-blue-200'}`}
                       />
                       {errors.date && <p className="text-red-500 text-xs mt-1">{errors.date}</p>}
                     </div>
@@ -330,7 +330,7 @@ const InterviewSlotManagement = () => {
                       <input
                         type="time"
                         {...field('time')}
-                        className={`w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.time ? 'border-red-400' : 'border-gray-200'}`}
+                        className={`w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.time ? 'border-red-400' : 'border-blue-200'}`}
                       />
                       {errors.time && <p className="text-red-500 text-xs mt-1">{errors.time}</p>}
                     </div>
@@ -342,7 +342,7 @@ const InterviewSlotManagement = () => {
                       </label>
                       <select
                         {...field('duration')}
-                        className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="w-full border border-blue-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                       >
                         {DURATION_OPTIONS.map((d) => (
                           <option key={d} value={d}>{d} min</option>
@@ -366,8 +366,8 @@ const InterviewSlotManagement = () => {
                             }}
                             className={`flex-1 flex flex-col items-center gap-1 py-2 rounded-lg border text-xs font-semibold transition ${
                               form.type === value
-                                ? 'border-blue-500 bg-blue-50 text-blue-700'
-                                : 'border-gray-200 text-gray-500 hover:border-blue-300'
+                                ? 'border-orange-400 bg-orange-50 text-blue-900'
+                                : 'border-blue-200 text-slate-500 hover:border-blue-300'
                             }`}
                           >
                             <Icon className="w-4 h-4" />
@@ -388,7 +388,7 @@ const InterviewSlotManagement = () => {
                           type="text"
                           placeholder="e.g., 2nd Floor, Head Office, Colombo 03"
                           {...field('location')}
-                          className={`w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.location ? 'border-red-400' : 'border-gray-200'}`}
+                          className={`w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.location ? 'border-red-400' : 'border-blue-200'}`}
                         />
                         {errors.location && <p className="text-red-500 text-xs mt-1">{errors.location}</p>}
                       </div>
@@ -405,7 +405,7 @@ const InterviewSlotManagement = () => {
                           type="url"
                           placeholder="https://meet.google.com/..."
                           {...field('meetingLink')}
-                          className={`w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.meetingLink ? 'border-red-400' : 'border-gray-200'}`}
+                          className={`w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.meetingLink ? 'border-red-400' : 'border-blue-200'}`}
                         />
                         {errors.meetingLink && <p className="text-red-500 text-xs mt-1">{errors.meetingLink}</p>}
                       </div>
@@ -420,7 +420,7 @@ const InterviewSlotManagement = () => {
                         rows={2}
                         placeholder="Any additional instructions for the candidate…"
                         {...field('notes')}
-                        className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+                        className="w-full border border-blue-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
                       />
                     </div>
                   </div>
@@ -429,14 +429,14 @@ const InterviewSlotManagement = () => {
                     <button
                       type="submit"
                       disabled={submitting}
-                      className="px-6 py-2.5 bg-blue-600 text-white text-sm font-semibold rounded-xl hover:bg-blue-700 transition disabled:opacity-60"
+                      className="px-6 py-2.5 bg-orange-500 text-white text-sm font-semibold rounded-xl hover:bg-orange-600 transition disabled:opacity-60"
                     >
                       {submitting ? 'Saving…' : 'Create Slot'}
                     </button>
                     <button
                       type="button"
                       onClick={() => { setShowForm(false); setErrors({}); setForm(EMPTY_FORM); }}
-                      className="px-6 py-2.5 text-sm font-semibold text-gray-600 hover:bg-gray-100 rounded-xl transition"
+                      className="px-6 py-2.5 text-sm font-semibold text-blue-900 hover:bg-blue-50 rounded-xl transition"
                     >
                       Cancel
                     </button>
@@ -451,10 +451,10 @@ const InterviewSlotManagement = () => {
                 <ArrowPathIcon className="w-8 h-8 animate-spin text-blue-400" />
               </div>
             ) : slots.length === 0 ? (
-              <div className="bg-white rounded-xl shadow-sm p-12 text-center">
-                <CalendarDaysIcon className="w-14 h-14 text-gray-200 mx-auto mb-3" />
-                <p className="text-gray-500 font-medium">No slots created yet</p>
-                <p className="text-gray-400 text-sm mt-1">
+              <div className="bg-white rounded-2xl shadow-lg border border-blue-100 p-12 text-center">
+                <CalendarDaysIcon className="w-14 h-14 text-blue-200 mx-auto mb-3" />
+                <p className="text-blue-900 font-medium">No slots created yet</p>
+                <p className="text-slate-400 text-sm mt-1">
                   Click &quot;Add Slot&quot; above to create interview slots for this job.
                 </p>
               </div>
@@ -492,9 +492,9 @@ const InterviewSlotManagement = () => {
 
         {/* Empty state when no job selected */}
         {!selectedJob && !loading && jobs.length > 0 && (
-          <div className="bg-white rounded-xl shadow-sm p-12 text-center">
-            <CalendarDaysIcon className="w-14 h-14 text-gray-200 mx-auto mb-3" />
-            <p className="text-gray-500 font-medium">Select a job to manage its interview slots</p>
+          <div className="bg-white rounded-2xl shadow-lg border border-blue-100 p-12 text-center">
+            <CalendarDaysIcon className="w-14 h-14 text-blue-200 mx-auto mb-3" />
+            <p className="text-blue-900 font-medium">Select a job to manage its interview slots</p>
           </div>
         )}
       </div>
@@ -510,8 +510,8 @@ const InterviewSlotManagement = () => {
 
 // ── SlotTable sub-component ──────────────────────────────────────────────────
 const SlotTable = ({ title, slots, deletingId, onDelete, showDelete, titleColor, headerBg }) => (
-  <div className="bg-white rounded-xl shadow-sm overflow-hidden">
-    <div className={`px-5 py-3 ${headerBg} border-b border-gray-100`}>
+  <div className="bg-white rounded-2xl shadow-lg border border-blue-100 overflow-hidden">
+    <div className={`px-5 py-3 ${headerBg} border-b border-blue-100`}>
       <h3 className={`text-sm font-bold uppercase tracking-wide ${titleColor}`}>
         {title} ({slots.length})
       </h3>
@@ -519,7 +519,7 @@ const SlotTable = ({ title, slots, deletingId, onDelete, showDelete, titleColor,
     <div className="overflow-x-auto">
       <table className="w-full text-sm">
         <thead>
-          <tr className="text-left text-gray-400 border-b border-gray-100 bg-gray-50">
+          <tr className="text-left text-blue-700 border-b border-blue-100 bg-blue-50">
             <th className="px-5 py-2.5 font-medium">#</th>
             <th className="px-5 py-2.5 font-medium">Date</th>
             <th className="px-5 py-2.5 font-medium">Time</th>
@@ -536,20 +536,20 @@ const SlotTable = ({ title, slots, deletingId, onDelete, showDelete, titleColor,
             }[slot.type] || MapPinIcon;
 
             return (
-              <tr key={slot._id} className="border-b border-gray-50 hover:bg-gray-50 transition">
-                <td className="px-5 py-3 text-gray-400 text-xs">{i + 1}</td>
-                <td className="px-5 py-3 font-medium text-gray-800 whitespace-nowrap">
+              <tr key={slot._id} className="border-b border-blue-50 hover:bg-blue-50 transition">
+                <td className="px-5 py-3 text-blue-300 text-xs">{i + 1}</td>
+                <td className="px-5 py-3 font-medium text-blue-900 whitespace-nowrap">
                   {fmtDate(slot.date)}
                 </td>
-                <td className="px-5 py-3 text-gray-700 whitespace-nowrap">{slot.time}</td>
-                <td className="px-5 py-3 text-gray-500">{slot.duration} min</td>
+                <td className="px-5 py-3 text-slate-700 whitespace-nowrap">{slot.time}</td>
+                <td className="px-5 py-3 text-slate-500">{slot.duration} min</td>
                 <td className="px-5 py-3">
-                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-50 text-blue-700">
+                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-orange-50 text-blue-900">
                     <ModeIcon className="w-3.5 h-3.5" />
                     {{ 'in-person': 'In-Person', video: 'Video', phone: 'Phone' }[slot.type]}
                   </span>
                 </td>
-                <td className="px-5 py-3 text-gray-500 text-xs max-w-[180px] truncate">
+                <td className="px-5 py-3 text-slate-500 text-xs max-w-[180px] truncate">
                   {slot.location || slot.meetingLink || (slot.notes ? `Note: ${slot.notes}` : '—')}
                 </td>
                 {showDelete && (
