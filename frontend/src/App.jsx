@@ -581,7 +581,7 @@ function AppContent() {
         </Routes>
       </div>
 
-      {!shouldHideChatbot && <ChatbotWidget />}
+      {!shouldHideChatbot && <ChatbotWidget currentUser={currentUser} />}
     </>
   );
 }
