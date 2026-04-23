@@ -43,6 +43,10 @@ const cvTemplateSchema = new mongoose.Schema(
     isDefault: {
       type: Boolean,
       default: false
+    },
+    profileImage: {
+      type: String,
+      default: ''
     }
   },
   {
