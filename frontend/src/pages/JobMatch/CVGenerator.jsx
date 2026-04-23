@@ -116,6 +116,14 @@ const CVGenerator = () => {
   const [selectedTemplate, setSelectedTemplate] = useState(null);
   const [inspectTemplateId, setInspectTemplateId] = useState(null);
   const [showPremiumModal, setShowPremiumModal] = useState(false);
+  const [isPremiumUser, setIsPremiumUser] = useState(false);
+  const [premiumCheckDone, setPremiumCheckDone] = useState(false);
+  // checkout steps: 'plan' | 'card' | 'processing' | 'success'
+  const [checkoutStep, setCheckoutStep] = useState('plan');
+  const [checkoutError, setCheckoutError] = useState('');
+  const [checkoutFieldErrors, setCheckoutFieldErrors] = useState({});
+  const [cardForm, setCardForm] = useState({ cardHolder: '', cardNumber: '', expiryMonth: '', expiryYear: '', cvv: '' });
+  const [purchaseResult, setPurchaseResult] = useState(null);
   const [formErrors, setFormErrors] = useState({});
   const [cvTitle, setCvTitle] = useState('');
   const [currentUserId, setCurrentUserId] = useState('');
@@ -138,6 +146,22 @@ const CVGenerator = () => {
       } catch { if (isMounted) setCurrentUserId(''); }
     };
     loadUser();
+    return () => { isMounted = false; };
+  }, []);
+
+  // ─── Check premium status ─────────────────────────────────────────────────
+  useEffect(() => {
+    let isMounted = true;
+    const checkPremium = async () => {
+      try {
+        const res = await fetch('http://localhost:5000/api/job-match/premium/status', { credentials: 'include' });
+        if (!res.ok) return;
+        const data = await res.json();
+        if (isMounted) setIsPremiumUser(Boolean(data?.isPremium));
+      } catch { /* silently ignore — user stays non-premium */ }
+      finally { if (isMounted) setPremiumCheckDone(true); }
+    };
+    checkPremium();
     return () => { isMounted = false; };
   }, []);
 
@@ -635,19 +659,20 @@ const CVGenerator = () => {
 
   // ─── Template preview card (grid) ────────────────────────────────────────
   const TemplatePreviewCard = ({ template }) => {
-    const isPremium = PREMIUM_IDS.has(template.id);
+    const isPremiumTemplate = PREMIUM_IDS.has(template.id);
+    const isLocked = isPremiumTemplate && !isPremiumUser;
     return (
-      <div className={`rounded-xl border overflow-hidden bg-white shadow-sm hover:shadow-md transition-shadow relative ${isPremium ? 'border-yellow-400' : 'border-gray-200'}`}>
-        {isPremium && (
-          <div className="absolute top-2 right-2 z-10 flex items-center gap-1 bg-gradient-to-r from-yellow-400 to-amber-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow">
-            ★ PREMIUM
+      <div className={`rounded-xl border overflow-hidden bg-white shadow-sm hover:shadow-md transition-shadow relative ${isPremiumTemplate ? (isPremiumUser ? 'border-emerald-400' : 'border-yellow-400') : 'border-gray-200'}`}>
+        {isPremiumTemplate && (
+          <div className={`absolute top-2 right-2 z-10 flex items-center gap-1 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow ${isPremiumUser ? 'bg-emerald-500' : 'bg-gradient-to-r from-yellow-400 to-amber-500'}`}>
+            {isPremiumUser ? '✓ OWNED' : '★ PREMIUM'}
           </div>
         )}
         <div className="h-52 overflow-hidden bg-gray-100 relative">
           <div className="origin-top-left scale-[0.36] w-[278%] pointer-events-none">
             <LargeTemplatePreview template={template} />
           </div>
-          {isPremium && (
+          {isLocked && (
             <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent flex items-end justify-center pb-3">
               <span className="text-white text-xs font-semibold flex items-center gap-1">
                 🔒 Premium Template
@@ -1351,49 +1376,275 @@ const CVGenerator = () => {
     );
   };
 
-  // ─── Premium modal ────────────────────────────────────────────────────────
-  const PremiumModal = () => (
+  // ─── Premium checkout modal ───────────────────────────────────────────────
+  const openPremiumModal = () => {
+    setCheckoutStep('plan');
+    setCheckoutError('');
+    setCheckoutFieldErrors({});
+    setCardForm({ cardHolder: '', cardNumber: '', expiryMonth: '', expiryYear: '', cvv: '' });
+    setPurchaseResult(null);
+    setShowPremiumModal(true);
+  };
+
+  const closePremiumModal = () => setShowPremiumModal(false);
+
+  const formatCardNumber = (val) =>
+    val.replace(/\D/g, '').slice(0, 16).replace(/(.{4})/g, '$1 ').trim();
+
+  const handleCardField = (field, value) => {
+    let v = value;
+    if (field === 'cardNumber') v = formatCardNumber(value);
+    if (field === 'expiryMonth' || field === 'expiryYear' || field === 'cvv') v = value.replace(/\D/g, '');
+    if (field === 'expiryMonth') v = v.slice(0, 2);
+    if (field === 'expiryYear') v = v.slice(0, 4);
+    if (field === 'cvv') v = v.slice(0, 4);
+    setCardForm((prev) => ({ ...prev, [field]: v }));
+    setCheckoutFieldErrors((prev) => { const n = { ...prev }; delete n[field]; return n; });
+    setCheckoutError('');
+  };
+
+  const submitPayment = async () => {
+    setCheckoutError('');
+    setCheckoutFieldErrors({});
+    setCheckoutStep('processing');
+    try {
+      const payload = {
+        cardHolder: cardForm.cardHolder,
+        cardNumber: cardForm.cardNumber.replace(/\s/g, ''),
+        expiryMonth: cardForm.expiryMonth,
+        expiryYear: cardForm.expiryYear,
+        cvv: cardForm.cvv,
+      };
+      const res = await fetch('http://localhost:5000/api/job-match/premium/purchase', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify(payload),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        if (data?.errors) setCheckoutFieldErrors(data.errors);
+        setCheckoutError(data?.message || 'Payment failed. Please try again.');
+        setCheckoutStep('card');
+        return;
+      }
+      setPurchaseResult(data);
+      setIsPremiumUser(true);
+      setCheckoutStep('success');
+    } catch {
+      setCheckoutError('Network error. Please check your connection and try again.');
+      setCheckoutStep('card');
+    }
+  };
+
+  // ─── Premium checkout modal (inlined JSX — NOT a nested component) ─────────
+  // Defining this as a nested component causes React to remount inputs on every
+  // parent re-render (keystroke), which resets focus. Inlining as a variable
+  // keeps the DOM nodes stable across renders.
+  const premiumModalJsx = showPremiumModal ? (
     <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4">
       <div className="w-full max-w-md bg-white rounded-2xl shadow-2xl overflow-hidden">
-        <div className="bg-gradient-to-r from-yellow-400 to-amber-500 px-6 py-5 text-center">
-          <p className="text-4xl mb-2">★</p>
-          <h2 className="text-2xl font-bold text-gray-900">Premium Template</h2>
-          <p className="text-sm text-amber-900 mt-1">Unlock exclusive designs for your CV</p>
-        </div>
-        <div className="p-6 space-y-4">
-          <ul className="space-y-2 text-sm text-gray-700">
-            {[
-              'Access all 5 premium templates',
-              'Unique layouts not available elsewhere',
-              'PDF download with premium styling',
-              'Priority support',
-            ].map((item) => (
-              <li key={item} className="flex items-center gap-2">
-                <span className="text-yellow-500 font-bold">✓</span> {item}
-              </li>
-            ))}
-          </ul>
-          <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 text-center">
-            <p className="text-xs text-amber-700 font-semibold uppercase tracking-wide mb-1">Coming Soon</p>
-            <p className="text-2xl font-bold text-gray-900">Premium Plan</p>
-            <p className="text-xs text-gray-500 mt-1">Premium templates will be available in the next release.</p>
+
+        {/* ── Already premium ── */}
+        {isPremiumUser && checkoutStep !== 'success' && (
+          <>
+            <div className="bg-gradient-to-r from-yellow-400 to-amber-500 px-6 py-6 text-center">
+              <p className="text-5xl mb-2">★</p>
+              <h2 className="text-2xl font-bold text-gray-900">You&apos;re Premium!</h2>
+              <p className="text-sm text-amber-900 mt-1">All premium templates are unlocked for you.</p>
+            </div>
+            <div className="p-6">
+              <button type="button" onClick={closePremiumModal} className="w-full py-2.5 rounded-xl bg-yellow-400 hover:bg-yellow-300 text-gray-900 font-bold">
+                Start Using Premium Templates
+              </button>
+            </div>
+          </>
+        )}
+
+        {/* ── Step: Plan ── */}
+        {!isPremiumUser && checkoutStep === 'plan' && (
+          <>
+            <div className="bg-gradient-to-r from-yellow-400 to-amber-500 px-6 py-5 text-center">
+              <p className="text-4xl mb-1">★</p>
+              <h2 className="text-2xl font-bold text-gray-900">Unlock Premium Templates</h2>
+              <p className="text-sm text-amber-900 mt-1">One-time payment — yours forever</p>
+            </div>
+            <div className="p-6 space-y-4">
+              <ul className="space-y-2 text-sm text-gray-700">
+                {['All 5 exclusive premium templates', 'Unique layouts unavailable in free tier', 'Premium PDF export styling', 'Lifetime access — no subscription'].map((item) => (
+                  <li key={item} className="flex items-center gap-2">
+                    <span className="text-yellow-500 font-bold text-base">✓</span> {item}
+                  </li>
+                ))}
+              </ul>
+              <div className="bg-gradient-to-br from-yellow-50 to-amber-50 border border-amber-200 rounded-xl p-4 text-center">
+                <p className="text-xs text-amber-600 font-semibold uppercase tracking-widest mb-1">One-time price</p>
+                <p className="text-4xl font-black text-gray-900">LKR 1,499</p>
+                <p className="text-xs text-gray-500 mt-1">Secure simulated checkout</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setCheckoutStep('card')}
+                className="w-full py-3 rounded-xl bg-gradient-to-r from-yellow-400 to-amber-500 text-gray-900 font-bold text-base hover:from-yellow-300 hover:to-amber-400 shadow"
+              >
+                Continue to Payment →
+              </button>
+              <button type="button" onClick={closePremiumModal} className="w-full py-2 rounded-xl border border-gray-200 text-gray-500 hover:bg-gray-50 text-sm">
+                Maybe Later
+              </button>
+            </div>
+          </>
+        )}
+
+        {/* ── Step: Card ── */}
+        {!isPremiumUser && checkoutStep === 'card' && (
+          <>
+            <div className="bg-gradient-to-r from-slate-700 to-slate-800 px-6 py-4 flex items-center gap-3">
+              <button type="button" onClick={() => setCheckoutStep('plan')} className="text-slate-300 hover:text-white text-lg">←</button>
+              <div>
+                <h2 className="text-lg font-bold text-white">Payment Details</h2>
+                <p className="text-xs text-slate-400">Simulated secure checkout · LKR 1,499</p>
+              </div>
+              <div className="ml-auto flex gap-1">
+                {['VISA', 'MC'].map(b => (
+                  <span key={b} className="text-[10px] font-bold bg-white/10 text-white px-2 py-0.5 rounded">{b}</span>
+                ))}
+              </div>
+            </div>
+            <div className="p-6 space-y-4">
+              {checkoutError && (
+                <div className="bg-red-50 border border-red-200 text-red-700 text-sm px-4 py-3 rounded-lg">{checkoutError}</div>
+              )}
+              <div>
+                <label className="block text-xs font-semibold text-gray-600 mb-1 uppercase tracking-wide">Card Number</label>
+                <div className="relative">
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    placeholder="1234 5678 9012 3456"
+                    value={cardForm.cardNumber}
+                    onChange={(e) => handleCardField('cardNumber', e.target.value)}
+                    className={`w-full border rounded-lg px-4 py-3 text-base tracking-widest font-mono ${checkoutFieldErrors.cardNumber ? 'border-red-400 bg-red-50' : 'border-gray-300'}`}
+                  />
+                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-xl">💳</span>
+                </div>
+                {checkoutFieldErrors.cardNumber && <p className="text-xs text-red-600 mt-1">{checkoutFieldErrors.cardNumber}</p>}
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-gray-600 mb-1 uppercase tracking-wide">Cardholder Name</label>
+                <input
+                  type="text"
+                  placeholder="Name as on card"
+                  value={cardForm.cardHolder}
+                  onChange={(e) => handleCardField('cardHolder', e.target.value)}
+                  className={`w-full border rounded-lg px-4 py-3 ${checkoutFieldErrors.cardHolder ? 'border-red-400 bg-red-50' : 'border-gray-300'}`}
+                />
+                {checkoutFieldErrors.cardHolder && <p className="text-xs text-red-600 mt-1">{checkoutFieldErrors.cardHolder}</p>}
+              </div>
+              <div className="grid grid-cols-3 gap-3">
+                <div>
+                  <label className="block text-xs font-semibold text-gray-600 mb-1 uppercase tracking-wide">Month</label>
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    placeholder="MM"
+                    value={cardForm.expiryMonth}
+                    onChange={(e) => handleCardField('expiryMonth', e.target.value)}
+                    className={`w-full border rounded-lg px-3 py-3 text-center ${checkoutFieldErrors.expiryMonth ? 'border-red-400 bg-red-50' : 'border-gray-300'}`}
+                  />
+                  {checkoutFieldErrors.expiryMonth && <p className="text-xs text-red-600 mt-1">{checkoutFieldErrors.expiryMonth}</p>}
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-gray-600 mb-1 uppercase tracking-wide">Year</label>
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    placeholder="YYYY"
+                    value={cardForm.expiryYear}
+                    onChange={(e) => handleCardField('expiryYear', e.target.value)}
+                    className={`w-full border rounded-lg px-3 py-3 text-center ${checkoutFieldErrors.expiryYear ? 'border-red-400 bg-red-50' : 'border-gray-300'}`}
+                  />
+                  {checkoutFieldErrors.expiryYear && <p className="text-xs text-red-600 mt-1">{checkoutFieldErrors.expiryYear}</p>}
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-gray-600 mb-1 uppercase tracking-wide">CVV</label>
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    placeholder="•••"
+                    value={cardForm.cvv}
+                    onChange={(e) => handleCardField('cvv', e.target.value)}
+                    className={`w-full border rounded-lg px-3 py-3 text-center ${checkoutFieldErrors.cvv ? 'border-red-400 bg-red-50' : 'border-gray-300'}`}
+                  />
+                  {checkoutFieldErrors.cvv && <p className="text-xs text-red-600 mt-1">{checkoutFieldErrors.cvv}</p>}
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={submitPayment}
+                className="w-full py-3 rounded-xl bg-gradient-to-r from-yellow-400 to-amber-500 text-gray-900 font-bold text-base hover:from-yellow-300 hover:to-amber-400 shadow"
+              >
+                Pay LKR 1,499
+              </button>
+              <p className="text-center text-xs text-gray-400">🔒 Simulated payment — no real charge</p>
+            </div>
+          </>
+        )}
+
+        {/* ── Step: Processing ── */}
+        {checkoutStep === 'processing' && (
+          <div className="p-10 flex flex-col items-center justify-center gap-4 min-h-[280px]">
+            <div className="w-14 h-14 border-4 border-yellow-400 border-t-transparent rounded-full animate-spin" />
+            <p className="text-lg font-semibold text-gray-800">Processing payment…</p>
+            <p className="text-sm text-gray-500">Please wait, do not close this window.</p>
           </div>
-          <button
-            type="button"
-            onClick={() => setShowPremiumModal(false)}
-            className="w-full py-2.5 rounded-xl border border-gray-300 text-gray-700 hover:bg-gray-50 font-medium"
-          >
-            Maybe Later
-          </button>
-        </div>
+        )}
+
+        {/* ── Step: Success ── */}
+        {checkoutStep === 'success' && (
+          <>
+            <div className="bg-gradient-to-r from-emerald-500 to-green-400 px-6 py-6 text-center">
+              <p className="text-5xl mb-2">✓</p>
+              <h2 className="text-2xl font-bold text-white">Payment Successful!</h2>
+              <p className="text-sm text-emerald-100 mt-1">Premium templates are now unlocked</p>
+            </div>
+            <div className="p-6 space-y-4">
+              {purchaseResult && (
+                <div className="bg-gray-50 border border-gray-200 rounded-xl p-4 space-y-2 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-gray-500">Transaction Ref</span>
+                    <span className="font-mono font-semibold text-gray-800">{purchaseResult.transactionRef}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-500">Card</span>
+                    <span className="text-gray-800">•••• •••• •••• {purchaseResult.cardLast4}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-500">Amount</span>
+                    <span className="font-bold text-gray-900">{purchaseResult.currency} {purchaseResult.amount?.toLocaleString()}</span>
+                  </div>
+                </div>
+              )}
+              <button
+                type="button"
+                onClick={closePremiumModal}
+                className="w-full py-3 rounded-xl bg-gradient-to-r from-yellow-400 to-amber-500 text-gray-900 font-bold text-base hover:from-yellow-300 hover:to-amber-400 shadow"
+              >
+                Start Using Premium Templates →
+              </button>
+            </div>
+          </>
+        )}
+
       </div>
     </div>
-  );
+  ) : null;
 
   // ─── Live preview panel (right column) ───────────────────────────────────
   const LivePreview = () => {
     const tc = templateClasses;
-    const isPremium = PREMIUM_IDS.has(selectedTemplate);
+    // Treat as premium-locked only if it's a premium template AND user hasn't purchased
+    const isPremium = PREMIUM_IDS.has(selectedTemplate) && !isPremiumUser;
 
     if (isPremium) {
       return (
@@ -1407,7 +1658,7 @@ const CVGenerator = () => {
             <p className="text-white/80 text-sm mt-1">Unlock to use this design</p>
             <button
               type="button"
-              onClick={() => setShowPremiumModal(true)}
+              onClick={openPremiumModal}
               className="mt-4 px-5 py-2 rounded-lg bg-gradient-to-r from-yellow-400 to-amber-500 text-gray-900 font-bold hover:from-yellow-300 hover:to-amber-400"
             >
               Unlock Premium
@@ -1524,7 +1775,7 @@ const CVGenerator = () => {
   // ─── Main render ──────────────────────────────────────────────────────────
   return (
     <div className="min-h-screen bg-gray-50 py-8">
-      {showPremiumModal && <PremiumModal />}
+      {premiumModalJsx}
 
       <div className="max-w-7xl mx-auto px-4">
         {!selectedTemplate ? (
@@ -1559,15 +1810,20 @@ const CVGenerator = () => {
             {/* Premium templates section */}
             <h2 className="text-lg font-semibold text-gray-700 mt-8 mb-1 flex items-center gap-2">
               <span className="text-yellow-500">★</span> Premium Templates
-              <span className="text-xs font-normal text-gray-500 bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded-full">Coming Soon</span>
+              {isPremiumUser
+                ? <span className="text-xs font-bold bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full">✓ Owned</span>
+                : <span className="text-xs font-normal bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded-full">LKR 1,499</span>
+              }
             </h2>
-            <p className="text-sm text-gray-500 mb-3">Exclusive designs with unique layouts and premium PDF styling.</p>
+            <p className="text-sm text-gray-500 mb-3">
+              {isPremiumUser ? 'All premium templates are unlocked. Click any to use it.' : 'Exclusive designs with unique layouts and premium PDF styling.'}
+            </p>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
               {premiumTemplates.map((template) => (
                 <button
                   type="button"
                   key={template.id}
-                  onClick={() => { setInspectTemplateId(template.id); }}
+                  onClick={() => setInspectTemplateId(template.id)}
                   className="text-left"
                 >
                   <TemplatePreviewCard template={template} />
@@ -1578,7 +1834,8 @@ const CVGenerator = () => {
             {/* Inspect / preview modal */}
             {inspectTemplateId ? (() => {
               const t = templates.find((t) => t.id === inspectTemplateId);
-              const isPremium = PREMIUM_IDS.has(inspectTemplateId);
+              const isPremiumTemplate = PREMIUM_IDS.has(inspectTemplateId);
+              const isLocked = isPremiumTemplate && !isPremiumUser;
               return (
                 <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
                   <div className="w-full max-w-4xl bg-white rounded-xl shadow-xl p-5">
@@ -1586,7 +1843,7 @@ const CVGenerator = () => {
                       <div>
                         <div className="flex items-center gap-2">
                           <h2 className="text-2xl font-bold text-gray-900">{t?.name}</h2>
-                          {isPremium && (
+                          {isPremiumTemplate && !isPremiumUser && (
                             <span className="text-xs font-bold bg-gradient-to-r from-yellow-400 to-amber-500 text-white px-2 py-0.5 rounded-full">★ PREMIUM</span>
                           )}
                         </div>
@@ -1598,13 +1855,13 @@ const CVGenerator = () => {
                     <LargeTemplatePreview template={t} />
 
                     <div className="mt-4 flex justify-end gap-3">
-                      {isPremium ? (
+                      {isLocked ? (
                         <button
                           type="button"
-                          onClick={() => { setInspectTemplateId(null); setShowPremiumModal(true); }}
+                          onClick={() => { setInspectTemplateId(null); openPremiumModal(); }}
                           className="bg-gradient-to-r from-yellow-400 to-amber-500 text-gray-900 font-bold px-5 py-2 rounded-lg hover:from-yellow-300 hover:to-amber-400"
                         >
-                          ★ Unlock Premium
+                          ★ Unlock Premium — LKR 1,499
                         </button>
                       ) : (
                         <>
@@ -1722,7 +1979,7 @@ const CVGenerator = () => {
                 {editingTemplateId ? (
                   <button type="button" onClick={deleteTemplate} disabled={saving} className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 disabled:opacity-70">Delete CV</button>
                 ) : null}
-                {preview && !PREMIUM_IDS.has(selectedTemplate) ? (
+                {preview && (!PREMIUM_IDS.has(selectedTemplate) || isPremiumUser) ? (
                   <button type="button" onClick={downloadPdf} className="bg-gray-900 text-white px-4 py-2 rounded-lg hover:bg-black">Download PDF</button>
                 ) : null}
               </div>
