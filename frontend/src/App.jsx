@@ -28,6 +28,7 @@ import ContactUsPage from "./pages/ContactUsPage";
 import JobSearch from "./pages/JobMatch/JobSearch";
 import SmartMatching from "./pages/JobMatch/SmartMatching";
 import CVGenerator from "./pages/JobMatch/CVGenerator";
+import SavedCVs from "./pages/JobMatch/SavedCVs";
 import MyApplications from "./pages/JobMatch/MyApplications";
 import ApplicationsDashboard from "./pages/JobMatch/ApplicationsDashboard";
 
@@ -561,6 +562,7 @@ function AppContent() {
           <Route path="/jobs/:id" element={<JobDetails />} />
           <Route path="/smart-matching" element={<SmartMatching />} />
           <Route path="/cv-generator" element={<CVGenerator />} />
+          <Route path="/cv-saved" element={<SavedCVs />} />
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/profile/edit" element={<EditProfilePage />} />
           <Route path="/change-password" element={<ChangePassword />} />
