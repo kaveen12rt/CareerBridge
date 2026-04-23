@@ -52,6 +52,12 @@ const CVGenerator = () => {
     { id: 'charcoal',         name: 'Charcoal Pro',     accent: 'bg-neutral-800',  card: 'from-neutral-700 to-neutral-400',description: 'Dark-highlight format for tech and product roles.' },
     { id: 'teal-clean',       name: 'Teal Clean',       accent: 'bg-teal-700',     card: 'from-teal-700 to-teal-300',      description: 'Fresh professional look with soft contrast.' },
     { id: 'mono-border',      name: 'Mono Border',      accent: 'bg-gray-700',     card: 'from-gray-500 to-gray-200',      description: 'Simple monochrome with structured dividers.' },
+    { id: 'lavender-soft',    name: 'Lavender Soft',    accent: 'bg-violet-400',   card: 'from-violet-200 to-purple-100',  description: 'Pastel purple two-column with soft rounded sections.' },
+    { id: 'steel-banner',     name: 'Steel Banner',     accent: 'bg-slate-600',    card: 'from-slate-700 to-slate-400',    description: 'Dark steel top banner with clean white content area.' },
+    { id: 'peach-card',       name: 'Peach Card',       accent: 'bg-orange-300',   card: 'from-orange-200 to-amber-100',   description: 'Warm peach tones with rounded card sections.' },
+    { id: 'slate-timeline',   name: 'Slate Timeline',   accent: 'bg-slate-500',    card: 'from-slate-400 to-slate-200',    description: 'Left accent bar with timeline-style section layout.' },
+    { id: 'copper-split',     name: 'Copper Split',     accent: 'bg-amber-600',    card: 'from-amber-700 to-orange-300',   description: 'Warm copper diagonal header with bold name treatment.' },
+    { id: 'ice-blue',         name: 'Ice Blue',         accent: 'bg-sky-400',      card: 'from-sky-200 to-blue-100',       description: 'Icy light blue with frosted card sections and clean type.' },
   ];
 
   // ─── Premium templates ───────────────────────────────────────────────────
@@ -350,6 +356,13 @@ const CVGenerator = () => {
       'indigo-edge':      { container: 'bg-indigo-50 border-indigo-300',    name: 'text-indigo-900',  heading: 'text-indigo-800 border-b border-indigo-400' },
       'graphite-clean':   { container: 'bg-zinc-50 border-zinc-300',        name: 'text-zinc-900',    heading: 'text-zinc-800 border-b border-zinc-400' },
       'executive-sidebar':{ container: 'bg-white border-stone-300',         name: 'text-white',       heading: 'text-zinc-800 border-b border-zinc-400' },
+      // New free templates
+      'lavender-soft':    { container: 'bg-violet-50 border-violet-200',    name: 'text-violet-900',  heading: 'text-violet-700 border-b border-violet-300' },
+      'steel-banner':     { container: 'bg-white border-slate-300',         name: 'text-white',       heading: 'text-slate-700 border-b border-slate-300' },
+      'peach-card':       { container: 'bg-orange-50 border-orange-200',    name: 'text-orange-900',  heading: 'text-orange-700 border-b border-orange-200' },
+      'slate-timeline':   { container: 'bg-slate-50 border-slate-300',      name: 'text-slate-900',   heading: 'text-slate-700 border-b border-slate-300' },
+      'copper-split':     { container: 'bg-amber-50 border-amber-300',      name: 'text-white',       heading: 'text-amber-800 border-b border-amber-300' },
+      'ice-blue':         { container: 'bg-sky-50 border-sky-200',          name: 'text-sky-900',     heading: 'text-sky-700 border-b border-sky-200' },
       // Premium
       'obsidian-luxury':  { container: 'bg-gray-950 border-yellow-500',     name: 'text-yellow-300',  heading: 'text-yellow-400 border-b border-yellow-600', body: 'text-gray-100', sub: 'text-gray-400' },
       'aurora-gradient':  { container: 'bg-white border-violet-200',        name: 'text-white',       heading: 'text-violet-700 border-b border-violet-300' },
@@ -589,6 +602,8 @@ const CVGenerator = () => {
       'midnight-gold': [234,179,8], 'coral-split': [234,88,12], 'forest-pro': [6,95,70],
       'aqua-grid': [8,145,178], 'plum-studio': [162,28,175], 'sunset-creative': [220,38,38],
       'indigo-edge': [67,56,202], 'graphite-clean': [82,82,91],
+      'lavender-soft': [109,40,217], 'steel-banner': [51,65,85], 'peach-card': [194,120,60],
+      'slate-timeline': [71,85,105], 'copper-split': [180,100,20], 'ice-blue': [14,116,144],
     };
     const titleColor = colorMap[selectedTemplate] || [30, 64, 175];
     let y = 56;
@@ -1026,6 +1041,276 @@ const CVGenerator = () => {
                 <p className="text-xs font-bold text-slate-700">EXPERIENCE</p>
                 <p className="text-[10px] text-slate-600">Marketing Executive - 2024</p>
                 <p className="text-[10px] text-slate-600">Sales Intern - 2022</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // ── New Free: Lavender Soft ───────────────────────────────────────────
+    if (template.id === 'lavender-soft') {
+      return (
+        <div className="h-[420px] rounded-xl overflow-hidden border border-violet-200 bg-violet-50">
+          <div className="grid grid-cols-[155px_1fr] h-full">
+            <div className="bg-violet-200/60 p-4 flex flex-col items-center pt-6 gap-3">
+              <img src={sampleProfileImage} alt="Sample" className="w-20 h-20 rounded-full object-cover border-4 border-white shadow-md" />
+              <div className="w-full">
+                <p className="text-[10px] font-bold text-violet-800 uppercase tracking-wide mb-1">Contact</p>
+                <div className="h-px bg-violet-300 mb-2" />
+                <p className="text-[9px] text-violet-700 truncate">{sampleData.email}</p>
+                <p className="text-[9px] text-violet-700">{sampleData.phone}</p>
+              </div>
+              <div className="w-full">
+                <p className="text-[10px] font-bold text-violet-800 uppercase tracking-wide mb-1">Skills</p>
+                <div className="h-px bg-violet-300 mb-2" />
+                <div className="flex flex-wrap gap-1">
+                  {['Communication','Leadership','SEO'].map(s => (
+                    <span key={s} className="text-[8px] bg-violet-300/70 text-violet-900 px-1.5 py-0.5 rounded-full">{s}</span>
+                  ))}
+                </div>
+              </div>
+            </div>
+            <div className="p-4">
+              <div className="mb-3 pb-3 border-b border-violet-200">
+                <p className="text-xl font-bold text-violet-900 leading-tight">{sampleData.fullName}</p>
+                <p className="text-xs text-violet-600 mt-0.5">{sampleData.role}</p>
+              </div>
+              <div className="space-y-3">
+                <div>
+                  <p className="text-[10px] font-bold text-violet-700 uppercase tracking-wide mb-1">About Me</p>
+                  <p className="text-[9px] text-gray-600 leading-relaxed">{sampleData.summary}</p>
+                </div>
+                <div>
+                  <p className="text-[10px] font-bold text-violet-700 uppercase tracking-wide mb-1">Experience</p>
+                  <p className="text-[9px] text-gray-700">Marketing Executive — ABC Co. (2022–2024)</p>
+                  <p className="text-[9px] text-gray-700">Sales Intern — XYZ Group (2021–2022)</p>
+                </div>
+                <div>
+                  <p className="text-[10px] font-bold text-violet-700 uppercase tracking-wide mb-1">Education</p>
+                  <p className="text-[9px] text-gray-700">BSc Marketing — Univ. of Colombo</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // ── New Free: Steel Banner ────────────────────────────────────────────
+    if (template.id === 'steel-banner') {
+      return (
+        <div className="h-[420px] rounded-xl overflow-hidden border border-slate-300 bg-white">
+          <div className="h-[105px] bg-slate-700 flex items-center justify-between px-6">
+            <div>
+              <p className="text-2xl font-bold text-white leading-tight">{sampleData.fullName}</p>
+              <p className="text-sm text-slate-300 mt-0.5">{sampleData.role}</p>
+              <p className="text-[10px] text-slate-400 mt-1">{sampleData.email} · {sampleData.phone}</p>
+            </div>
+            <img src={sampleProfileImage} alt="Sample" className="w-18 h-18 w-[72px] h-[72px] rounded-lg object-cover border-2 border-slate-500 shadow" />
+          </div>
+          <div className="p-5 grid grid-cols-[1fr_130px] gap-4">
+            <div className="space-y-3">
+              <div>
+                <p className="text-xs font-bold text-slate-600 uppercase tracking-widest mb-1">Profile</p>
+                <div className="h-0.5 bg-slate-200 mb-2" />
+                <p className="text-[10px] text-gray-600 leading-relaxed">{sampleData.summary}</p>
+              </div>
+              <div>
+                <p className="text-xs font-bold text-slate-600 uppercase tracking-widest mb-1">Experience</p>
+                <div className="h-0.5 bg-slate-200 mb-2" />
+                <p className="text-[10px] text-gray-700">Marketing Executive — 2024</p>
+                <p className="text-[10px] text-gray-700">Sales Intern — 2022</p>
+              </div>
+            </div>
+            <div className="space-y-3">
+              <div>
+                <p className="text-[10px] font-bold text-slate-600 uppercase tracking-widest mb-1">Skills</p>
+                <div className="h-0.5 bg-slate-200 mb-2" />
+                <div className="space-y-1">
+                  {['Communication','Leadership','SEO','Negotiation'].map(s => (
+                    <div key={s} className="flex items-center gap-1">
+                      <div className="w-1.5 h-1.5 rounded-full bg-slate-500 flex-shrink-0" />
+                      <p className="text-[9px] text-gray-700">{s}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <p className="text-[10px] font-bold text-slate-600 uppercase tracking-widest mb-1">Education</p>
+                <div className="h-0.5 bg-slate-200 mb-2" />
+                <p className="text-[9px] text-gray-700">BSc Marketing</p>
+                <p className="text-[9px] text-gray-500">Univ. of Colombo</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // ── New Free: Peach Card ──────────────────────────────────────────────
+    if (template.id === 'peach-card') {
+      return (
+        <div className="h-[420px] rounded-xl overflow-hidden border border-orange-200 bg-orange-50 p-4">
+          <div className="h-full flex flex-col gap-3">
+            <div className="bg-white rounded-xl p-4 shadow-sm flex items-center gap-4 border border-orange-100">
+              <img src={sampleProfileImage} alt="Sample" className="w-16 h-16 rounded-full object-cover border-4 border-orange-200 shadow" />
+              <div>
+                <p className="text-xl font-bold text-orange-900 leading-tight">{sampleData.fullName}</p>
+                <p className="text-xs text-orange-600 mt-0.5">{sampleData.role}</p>
+                <p className="text-[9px] text-orange-400 mt-0.5">{sampleData.email}</p>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-3 flex-1">
+              <div className="bg-white rounded-xl p-3 shadow-sm border border-orange-100 space-y-2">
+                <p className="text-[10px] font-bold text-orange-700 uppercase tracking-wide">About Me</p>
+                <p className="text-[9px] text-gray-600 leading-relaxed">{sampleData.summary}</p>
+              </div>
+              <div className="flex flex-col gap-3">
+                <div className="bg-white rounded-xl p-3 shadow-sm border border-orange-100">
+                  <p className="text-[10px] font-bold text-orange-700 uppercase tracking-wide mb-1">Skills</p>
+                  <div className="flex flex-wrap gap-1">
+                    {['Communication','Leadership','SEO'].map(s => (
+                      <span key={s} className="text-[8px] bg-orange-100 text-orange-800 px-1.5 py-0.5 rounded-full">{s}</span>
+                    ))}
+                  </div>
+                </div>
+                <div className="bg-white rounded-xl p-3 shadow-sm border border-orange-100">
+                  <p className="text-[10px] font-bold text-orange-700 uppercase tracking-wide mb-1">Education</p>
+                  <p className="text-[9px] text-gray-700">BSc Marketing</p>
+                  <p className="text-[9px] text-gray-500">Univ. of Colombo</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // ── New Free: Slate Timeline ──────────────────────────────────────────
+    if (template.id === 'slate-timeline') {
+      return (
+        <div className="h-[420px] rounded-xl overflow-hidden border border-slate-200 bg-slate-50 flex">
+          <div className="w-1 bg-slate-400 flex-shrink-0" />
+          <div className="flex-1 p-5">
+            <div className="flex items-center gap-4 mb-4 pb-3 border-b border-slate-200">
+              <img src={sampleProfileImage} alt="Sample" className="w-14 h-14 rounded-full object-cover border-3 border-slate-300 shadow" />
+              <div>
+                <p className="text-xl font-bold text-slate-900">{sampleData.fullName}</p>
+                <p className="text-xs text-slate-500">{sampleData.role}</p>
+                <p className="text-[9px] text-slate-400">{sampleData.email}</p>
+              </div>
+            </div>
+            <div className="space-y-3">
+              {[
+                { label: 'Summary', text: sampleData.summary },
+                { label: 'Experience', items: ['Marketing Executive — 2024', 'Sales Intern — 2022'] },
+                { label: 'Skills', items: ['Communication', 'Leadership', 'SEO', 'Negotiation'] },
+              ].map(({ label, text, items }) => (
+                <div key={label} className="flex gap-3">
+                  <div className="flex flex-col items-center">
+                    <div className="w-2.5 h-2.5 rounded-full bg-slate-500 mt-0.5 flex-shrink-0" />
+                    <div className="w-px flex-1 bg-slate-300 mt-1" />
+                  </div>
+                  <div className="pb-2">
+                    <p className="text-[10px] font-bold text-slate-700 uppercase tracking-wide mb-1">{label}</p>
+                    {text && <p className="text-[9px] text-gray-600 leading-relaxed">{text}</p>}
+                    {items && items.map(i => <p key={i} className="text-[9px] text-gray-700">{i}</p>)}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // ── New Free: Copper Split ────────────────────────────────────────────
+    if (template.id === 'copper-split') {
+      return (
+        <div className="h-[420px] rounded-xl overflow-hidden border border-amber-200 bg-white">
+          <div className="relative h-[120px] bg-gradient-to-br from-amber-700 to-orange-500 overflow-hidden">
+            <div className="absolute -bottom-6 -right-6 w-32 h-32 rounded-full bg-white/10" />
+            <div className="absolute -top-4 -left-4 w-20 h-20 rounded-full bg-white/10" />
+            <div className="relative z-10 flex items-center gap-4 px-6 h-full">
+              <img src={sampleProfileImage} alt="Sample" className="w-18 w-[72px] h-[72px] rounded-full object-cover border-4 border-white/80 shadow-lg" />
+              <div>
+                <p className="text-2xl font-black text-white leading-tight">{sampleData.fullName}</p>
+                <p className="text-sm text-amber-100 mt-0.5">{sampleData.role}</p>
+              </div>
+            </div>
+          </div>
+          <div className="p-5 grid grid-cols-2 gap-4">
+            <div className="space-y-3">
+              <div>
+                <p className="text-[10px] font-bold text-amber-700 uppercase tracking-wide mb-1">Profile</p>
+                <div className="h-0.5 bg-amber-200 mb-2" />
+                <p className="text-[9px] text-gray-600 leading-relaxed">{sampleData.summary}</p>
+              </div>
+              <div>
+                <p className="text-[10px] font-bold text-amber-700 uppercase tracking-wide mb-1">Contact</p>
+                <div className="h-0.5 bg-amber-200 mb-2" />
+                <p className="text-[9px] text-gray-700">{sampleData.email}</p>
+                <p className="text-[9px] text-gray-700">{sampleData.phone}</p>
+              </div>
+            </div>
+            <div className="space-y-3">
+              <div>
+                <p className="text-[10px] font-bold text-amber-700 uppercase tracking-wide mb-1">Experience</p>
+                <div className="h-0.5 bg-amber-200 mb-2" />
+                <p className="text-[9px] text-gray-700">Marketing Executive — 2024</p>
+                <p className="text-[9px] text-gray-700">Sales Intern — 2022</p>
+              </div>
+              <div>
+                <p className="text-[10px] font-bold text-amber-700 uppercase tracking-wide mb-1">Skills</p>
+                <div className="h-0.5 bg-amber-200 mb-2" />
+                <div className="flex flex-wrap gap-1">
+                  {['Communication','Leadership','SEO'].map(s => (
+                    <span key={s} className="text-[8px] bg-amber-100 text-amber-800 px-1.5 py-0.5 rounded">{s}</span>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // ── New Free: Ice Blue ────────────────────────────────────────────────
+    if (template.id === 'ice-blue') {
+      return (
+        <div className="h-[420px] rounded-xl overflow-hidden border border-sky-200 bg-gradient-to-b from-sky-100 to-blue-50">
+          <div className="p-5 flex flex-col h-full gap-3">
+            <div className="bg-white/80 backdrop-blur rounded-xl p-4 border border-sky-100 shadow-sm flex items-center gap-4">
+              <img src={sampleProfileImage} alt="Sample" className="w-16 h-16 rounded-full object-cover border-4 border-sky-200 shadow" />
+              <div className="flex-1">
+                <p className="text-xl font-bold text-sky-900">{sampleData.fullName}</p>
+                <p className="text-xs text-sky-600 mt-0.5">{sampleData.role}</p>
+                <p className="text-[9px] text-sky-400 mt-0.5">{sampleData.email} · {sampleData.phone}</p>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-3 flex-1">
+              <div className="bg-white/70 backdrop-blur rounded-xl p-3 border border-sky-100 shadow-sm">
+                <p className="text-[10px] font-bold text-sky-700 uppercase tracking-wide mb-1">About Me</p>
+                <div className="h-px bg-sky-200 mb-2" />
+                <p className="text-[9px] text-gray-600 leading-relaxed">{sampleData.summary}</p>
+              </div>
+              <div className="flex flex-col gap-3">
+                <div className="bg-white/70 backdrop-blur rounded-xl p-3 border border-sky-100 shadow-sm">
+                  <p className="text-[10px] font-bold text-sky-700 uppercase tracking-wide mb-1">Skills</p>
+                  <div className="h-px bg-sky-200 mb-2" />
+                  <div className="flex flex-wrap gap-1">
+                    {['Communication','Leadership','SEO'].map(s => (
+                      <span key={s} className="text-[8px] bg-sky-100 text-sky-800 px-1.5 py-0.5 rounded-full border border-sky-200">{s}</span>
+                    ))}
+                  </div>
+                </div>
+                <div className="bg-white/70 backdrop-blur rounded-xl p-3 border border-sky-100 shadow-sm">
+                  <p className="text-[10px] font-bold text-sky-700 uppercase tracking-wide mb-1">Education</p>
+                  <div className="h-px bg-sky-200 mb-2" />
+                  <p className="text-[9px] text-gray-700">BSc Marketing</p>
+                  <p className="text-[9px] text-gray-500">Univ. of Colombo</p>
+                </div>
               </div>
             </div>
           </div>
