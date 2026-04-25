@@ -2,6 +2,7 @@ import Job from "../../models/CompanyJobs/Job.js";
 import InterviewSlot from "../../models/CompanyJobs/InterviewSlot.js";
 import mongoose from "mongoose";
 import { analyzeJobPostQuality } from "../../utils/CompanyJobs/jobQualityAnalyzer.js";
+import User from "../../models/UserManagement/User.js";
 
 // Create sample jobs for testing
 const createSampleJobs = async (req, res) => {
@@ -302,9 +303,7 @@ const getJobById = async (req, res) => {
 const createJob = async (req, res) => {
   try {
     const {
-      companyName,
       companyImage,
-      companyEmail,
       title,
       department,
       location,
@@ -319,18 +318,32 @@ const createJob = async (req, res) => {
       image,
     } = req.body;
 
-    if (!companyName || !title || !department || !location || !description) {
+    if (!title || !department || !location || !description) {
       return res.status(400).json({
-        message: "Missing required fields: companyName, title, department, location, description",
+        message:
+          "Missing required fields: title, department, location, description",
       });
     }
 
-    const companyId = "507f1f77bcf86cd799439011";
+    const user = await User.findById(req.user.id);
+    const cp = user?.companyProfile || {};
+    const resolvedCompanyName = String(cp.companyName || "").trim();
+
+    if (!resolvedCompanyName) {
+      return res.status(400).json({
+        message:
+          "Please complete your company profile (Company Name) before posting a job.",
+      });
+    }
+
+    const companyId = req.user.id;
+    const resolvedCompanyImage = String(cp.logo || companyImage || "").trim();
+    const resolvedCompanyEmail = String(user?.email || "").trim();
 
     const job = new Job({
-      companyName,
-      companyImage,
-      companyEmail,
+      companyName: resolvedCompanyName,
+      companyImage: resolvedCompanyImage,
+      companyEmail: resolvedCompanyEmail,
       title,
       department,
       location,
@@ -372,6 +385,10 @@ const updateJob = async (req, res) => {
       return res.status(404).json({ message: "Job not found" });
     }
 
+    if (String(job.companyId) !== String(req.user.id)) {
+      return res.status(403).json({ message: "Not allowed to update this job" });
+    }
+
     const mergedPayload = {
       ...job.toObject(),
       ...req.body,
@@ -410,6 +427,10 @@ const deleteJob = async (req, res) => {
 
     if (!job) {
       return res.status(404).json({ message: "Job not found" });
+    }
+
+    if (String(job.companyId) !== String(req.user.id)) {
+      return res.status(403).json({ message: "Not allowed to delete this job" });
     }
 
     await InterviewSlot.deleteMany({ jobId: id });

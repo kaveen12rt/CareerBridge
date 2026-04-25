@@ -1,8 +1,8 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { PlusIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import { analyzeJobPostQuality } from './jobQualityAnalyzer';
 
-const JobPostingForm = () => {
+const JobPostingForm = ({ embedded = false, initialValues = {}, onPosted, onClose }) => {
   const [formData, setFormData] = useState({
     companyName: '',
     companyImage: '',
@@ -19,7 +19,17 @@ const JobPostingForm = () => {
     deadline: ''
   });
   const [loading, setLoading] = useState(false);
+  const [submitError, setSubmitError] = useState('');
   const qualityAnalysis = useMemo(() => analyzeJobPostQuality(formData), [formData]);
+
+  useEffect(() => {
+    if (initialValues && typeof initialValues === 'object') {
+      setFormData((prev) => ({
+        ...prev,
+        ...initialValues,
+      }));
+    }
+  }, [initialValues]);
 
   const getQualityTheme = (score) => {
     if (score >= 85) {
@@ -87,6 +97,7 @@ const JobPostingForm = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setSubmitError('');
 
     if (qualityAnalysis.criticalIssues.length > 0) {
       alert(`Please fix these issues before publishing:\n- ${qualityAnalysis.criticalIssues.join('\n- ')}`);
@@ -111,14 +122,18 @@ const JobPostingForm = () => {
         headers: {
           'Content-Type': 'application/json',
         },
+        credentials: 'include',
         body: JSON.stringify(formData)
       });
 
       if (response.ok) {
-        alert('Job posted successfully!');
+        const created = await response.json().catch(() => null);
+        if (!embedded) {
+          alert('Job posted successfully!');
+        }
         setFormData({
-          companyName: '',
-          companyImage: '',
+          companyName: initialValues?.companyName || '',
+          companyImage: initialValues?.companyImage || '',
           title: '',
           department: '',
           location: '',
@@ -131,25 +146,67 @@ const JobPostingForm = () => {
           experience: '',
           deadline: ''
         });
+        if (typeof onPosted === 'function') {
+          onPosted(created);
+        }
       } else {
-        alert('Failed to post job. Please try again.');
+        const data = await response.json().catch(() => ({}));
+        const message = data?.message || 'Failed to post job. Please try again.';
+        if (embedded) {
+          setSubmitError(message);
+        } else {
+          alert(message);
+        }
       }
     } catch (error) {
       console.error('Error posting job:', error);
-      alert('Error posting job. Please try again.');
+      const message = 'Error posting job. Please try again.';
+      if (embedded) {
+        setSubmitError(message);
+      } else {
+        alert(message);
+      }
     } finally {
       setLoading(false);
     }
   };
 
+  const containerClassName = embedded
+    ? 'bg-white'
+    : 'min-h-screen bg-slate-50 py-6';
+
+  const innerClassName = embedded
+    ? 'w-full'
+    : 'max-w-3xl mx-auto px-4 sm:px-6 lg:px-8';
+
   return (
-    <div className="min-h-screen bg-slate-50 py-6">
-      <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div className={containerClassName}>
+      <div className={innerClassName}>
         <div className="bg-white shadow-lg border border-blue-100 rounded-2xl company-card company-fade-up">
           <div className="px-6 py-4 border-b border-blue-100">
             <h1 className="text-2xl font-bold text-blue-900">Post a New Job</h1>
             <p className="text-slate-600 mt-1">Fill in the details to create a job posting</p>
           </div>
+
+          {embedded && typeof onClose === 'function' ? (
+            <div className="px-6 pt-5">
+              <button
+                type="button"
+                onClick={onClose}
+                className="text-sm font-semibold text-slate-600 hover:text-slate-900"
+              >
+                ← Back to jobs
+              </button>
+            </div>
+          ) : null}
+
+          {submitError ? (
+            <div className="px-6 pt-5">
+              <div className="rounded-xl border border-orange-200 bg-orange-50 px-4 py-3 text-sm text-orange-700">
+                {submitError}
+              </div>
+            </div>
+          ) : null}
 
           <div className="px-6 pt-6">
             <div className={`border rounded-lg p-4 ${getQualityTheme(qualityAnalysis.score)}`}>

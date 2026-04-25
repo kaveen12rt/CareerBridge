@@ -3,7 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-function EditProfilePage() {
+function EditProfilePage({ onUserUpdated }) {
   const navigate = useNavigate();
 
   const [loading, setLoading] = useState(true);
@@ -11,11 +11,19 @@ function EditProfilePage() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [formErrors, setFormErrors] = useState({});
+  const [role, setRole] = useState("student");
 
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
     email: "",
+    companyName: "",
+    industry: "",
+    website: "",
+    description: "",
+    location: "",
+    employeeCount: "",
+    logo: "",
     university: "",
     major: "",
     graduationYear: "",
@@ -40,12 +48,22 @@ function EditProfilePage() {
         }
 
         const user = data.data.user;
+        setRole(user.role || "student");
+
         const sp = user.studentProfile || {};
+        const cp = user.companyProfile || {};
 
         setFormData({
           firstName: user.firstName || "",
           lastName: user.lastName || "",
           email: user.email || "",
+          companyName: cp.companyName || "",
+          industry: cp.industry || "",
+          website: cp.website || "",
+          description: cp.description || "",
+          location: cp.location || "",
+          employeeCount: cp.employeeCount || "",
+          logo: cp.logo || "",
           university: sp.university || "",
           major: sp.major || "",
           graduationYear: sp.graduationYear || "",
@@ -84,14 +102,23 @@ function EditProfilePage() {
       errors.email = "Enter a valid email.";
     }
 
-    if (!formData.university.trim()) errors.university = "University is required.";
-    if (!formData.major.trim()) errors.major = "Major is required.";
+    if (role === "company") {
+      if (!formData.companyName.trim())
+        errors.companyName = "Company name is required.";
+      if (!formData.industry.trim()) errors.industry = "Industry is required.";
+      if (!formData.description.trim())
+        errors.description = "Company description is required.";
+    } else {
+      if (!formData.university.trim())
+        errors.university = "University is required.";
+      if (!formData.major.trim()) errors.major = "Major is required.";
 
-    if (
-      formData.graduationYear &&
-      !/^\d{4}$/.test(String(formData.graduationYear))
-    ) {
-      errors.graduationYear = "Graduation year must be 4 digits.";
+      if (
+        formData.graduationYear &&
+        !/^\d{4}$/.test(String(formData.graduationYear))
+      ) {
+        errors.graduationYear = "Graduation year must be 4 digits.";
+      }
     }
 
     return errors;
@@ -125,7 +152,20 @@ function EditProfilePage() {
         firstName: formData.firstName.trim(),
         lastName: formData.lastName.trim(),
         email: formData.email.trim(),
-        studentProfile: {
+      };
+
+      if (role === "company") {
+        body.companyProfile = {
+          companyName: formData.companyName.trim(),
+          industry: formData.industry.trim(),
+          website: formData.website.trim(),
+          description: formData.description.trim(),
+          location: formData.location.trim(),
+          employeeCount: formData.employeeCount.trim(),
+          logo: formData.logo.trim(),
+        };
+      } else {
+        body.studentProfile = {
           university: formData.university.trim(),
           major: formData.major.trim(),
           graduationYear: formData.graduationYear
@@ -135,8 +175,8 @@ function EditProfilePage() {
           certifications: toArray(formData.certificationsText),
           bio: formData.bio.trim(),
           resume: formData.resume.trim(),
-        },
-      };
+        };
+      }
 
       const res = await fetch("http://localhost:5000/api/auth/profile", {
         method: "PUT",
@@ -155,6 +195,9 @@ function EditProfilePage() {
       }
 
       setSuccess("Profile saved successfully.");
+      if (typeof onUserUpdated === "function" && data?.data?.user) {
+        onUserUpdated(data.data.user);
+      }
 
       setTimeout(() => {
         navigate("/profile");
@@ -179,10 +222,12 @@ function EditProfilePage() {
       <div className="max-w-5xl mx-auto">
         <div className="bg-white rounded-2xl shadow-lg p-8 mb-8">
           <h1 className="text-4xl font-bold text-indigo-600 mb-3">
-            Edit Profile
+            {role === "company" ? "Edit Company Profile" : "Edit Profile"}
           </h1>
           <p className="text-gray-600 text-lg">
-            Enter or update your student profile details here.
+            {role === "company"
+              ? "Enter or update your company profile details here."
+              : "Enter or update your student profile details here."}
           </p>
         </div>
 
@@ -250,109 +295,235 @@ function EditProfilePage() {
               )}
             </div>
 
-            <div className="grid md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-1">
-                  University
-                </label>
-                <input
-                  type="text"
-                  name="university"
-                  value={formData.university}
-                  onChange={handleChange}
-                  className="w-full border border-gray-300 rounded-lg px-4 py-3 outline-none focus:ring-2 focus:ring-indigo-500"
-                />
-                {formErrors.university && (
-                  <p className="mt-1 text-sm text-red-600">{formErrors.university}</p>
-                )}
-              </div>
+            {role === "company" ? (
+              <>
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-1">
+                    Company Name
+                  </label>
+                  <input
+                    type="text"
+                    name="companyName"
+                    value={formData.companyName}
+                    onChange={handleChange}
+                    className="w-full border border-gray-300 rounded-lg px-4 py-3 outline-none focus:ring-2 focus:ring-indigo-500"
+                  />
+                  {formErrors.companyName && (
+                    <p className="mt-1 text-sm text-red-600">
+                      {formErrors.companyName}
+                    </p>
+                  )}
+                </div>
 
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-1">
-                  Major
-                </label>
-                <input
-                  type="text"
-                  name="major"
-                  value={formData.major}
-                  onChange={handleChange}
-                  className="w-full border border-gray-300 rounded-lg px-4 py-3 outline-none focus:ring-2 focus:ring-indigo-500"
-                />
-                {formErrors.major && (
-                  <p className="mt-1 text-sm text-red-600">{formErrors.major}</p>
-                )}
-              </div>
-            </div>
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-1">
+                      Industry
+                    </label>
+                    <input
+                      type="text"
+                      name="industry"
+                      value={formData.industry}
+                      onChange={handleChange}
+                      className="w-full border border-gray-300 rounded-lg px-4 py-3 outline-none focus:ring-2 focus:ring-indigo-500"
+                    />
+                    {formErrors.industry && (
+                      <p className="mt-1 text-sm text-red-600">
+                        {formErrors.industry}
+                      </p>
+                    )}
+                  </div>
 
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-1">
-                Graduation Year
-              </label>
-              <input
-                type="number"
-                name="graduationYear"
-                value={formData.graduationYear}
-                onChange={handleChange}
-                className="w-full border border-gray-300 rounded-lg px-4 py-3 outline-none focus:ring-2 focus:ring-indigo-500"
-              />
-              {formErrors.graduationYear && (
-                <p className="mt-1 text-sm text-red-600">{formErrors.graduationYear}</p>
-              )}
-            </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-1">
+                      Employee Count
+                    </label>
+                    <input
+                      type="text"
+                      name="employeeCount"
+                      value={formData.employeeCount}
+                      onChange={handleChange}
+                      placeholder="e.g., 1-10, 11-50, 51-200"
+                      className="w-full border border-gray-300 rounded-lg px-4 py-3 outline-none focus:ring-2 focus:ring-indigo-500"
+                    />
+                  </div>
+                </div>
 
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-1">
-                Skills
-              </label>
-              <input
-                type="text"
-                name="skillsText"
-                value={formData.skillsText}
-                onChange={handleChange}
-                placeholder="React, Java, Node.js"
-                className="w-full border border-gray-300 rounded-lg px-4 py-3 outline-none focus:ring-2 focus:ring-indigo-500"
-              />
-            </div>
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-1">
+                      Website
+                    </label>
+                    <input
+                      type="text"
+                      name="website"
+                      value={formData.website}
+                      onChange={handleChange}
+                      placeholder="https://example.com"
+                      className="w-full border border-gray-300 rounded-lg px-4 py-3 outline-none focus:ring-2 focus:ring-indigo-500"
+                    />
+                  </div>
 
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-1">
-                Certifications
-              </label>
-              <input
-                type="text"
-                name="certificationsText"
-                value={formData.certificationsText}
-                onChange={handleChange}
-                placeholder="AWS Cloud Practitioner, Google UX"
-                className="w-full border border-gray-300 rounded-lg px-4 py-3 outline-none focus:ring-2 focus:ring-indigo-500"
-              />
-            </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-1">
+                      Location
+                    </label>
+                    <input
+                      type="text"
+                      name="location"
+                      value={formData.location}
+                      onChange={handleChange}
+                      placeholder="City, Country"
+                      className="w-full border border-gray-300 rounded-lg px-4 py-3 outline-none focus:ring-2 focus:ring-indigo-500"
+                    />
+                  </div>
+                </div>
 
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-1">
-                Bio
-              </label>
-              <textarea
-                name="bio"
-                value={formData.bio}
-                onChange={handleChange}
-                rows="4"
-                className="w-full border border-gray-300 rounded-lg px-4 py-3 outline-none focus:ring-2 focus:ring-indigo-500"
-              />
-            </div>
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-1">
+                    Company Description
+                  </label>
+                  <textarea
+                    name="description"
+                    value={formData.description}
+                    onChange={handleChange}
+                    rows="5"
+                    className="w-full border border-gray-300 rounded-lg px-4 py-3 outline-none focus:ring-2 focus:ring-indigo-500"
+                  />
+                  {formErrors.description && (
+                    <p className="mt-1 text-sm text-red-600">
+                      {formErrors.description}
+                    </p>
+                  )}
+                </div>
 
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-1">
-                Resume Link
-              </label>
-              <input
-                type="text"
-                name="resume"
-                value={formData.resume}
-                onChange={handleChange}
-                className="w-full border border-gray-300 rounded-lg px-4 py-3 outline-none focus:ring-2 focus:ring-indigo-500"
-              />
-            </div>
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-1">
+                    Logo URL (optional)
+                  </label>
+                  <input
+                    type="text"
+                    name="logo"
+                    value={formData.logo}
+                    onChange={handleChange}
+                    placeholder="https://..."
+                    className="w-full border border-gray-300 rounded-lg px-4 py-3 outline-none focus:ring-2 focus:ring-indigo-500"
+                  />
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-1">
+                      University
+                    </label>
+                    <input
+                      type="text"
+                      name="university"
+                      value={formData.university}
+                      onChange={handleChange}
+                      className="w-full border border-gray-300 rounded-lg px-4 py-3 outline-none focus:ring-2 focus:ring-indigo-500"
+                    />
+                    {formErrors.university && (
+                      <p className="mt-1 text-sm text-red-600">
+                        {formErrors.university}
+                      </p>
+                    )}
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-1">
+                      Major
+                    </label>
+                    <input
+                      type="text"
+                      name="major"
+                      value={formData.major}
+                      onChange={handleChange}
+                      className="w-full border border-gray-300 rounded-lg px-4 py-3 outline-none focus:ring-2 focus:ring-indigo-500"
+                    />
+                    {formErrors.major && (
+                      <p className="mt-1 text-sm text-red-600">
+                        {formErrors.major}
+                      </p>
+                    )}
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-1">
+                    Graduation Year
+                  </label>
+                  <input
+                    type="number"
+                    name="graduationYear"
+                    value={formData.graduationYear}
+                    onChange={handleChange}
+                    className="w-full border border-gray-300 rounded-lg px-4 py-3 outline-none focus:ring-2 focus:ring-indigo-500"
+                  />
+                  {formErrors.graduationYear && (
+                    <p className="mt-1 text-sm text-red-600">
+                      {formErrors.graduationYear}
+                    </p>
+                  )}
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-1">
+                    Skills
+                  </label>
+                  <input
+                    type="text"
+                    name="skillsText"
+                    value={formData.skillsText}
+                    onChange={handleChange}
+                    placeholder="React, Java, Node.js"
+                    className="w-full border border-gray-300 rounded-lg px-4 py-3 outline-none focus:ring-2 focus:ring-indigo-500"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-1">
+                    Certifications
+                  </label>
+                  <input
+                    type="text"
+                    name="certificationsText"
+                    value={formData.certificationsText}
+                    onChange={handleChange}
+                    placeholder="AWS Cloud Practitioner, Google UX"
+                    className="w-full border border-gray-300 rounded-lg px-4 py-3 outline-none focus:ring-2 focus:ring-indigo-500"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-1">
+                    Bio
+                  </label>
+                  <textarea
+                    name="bio"
+                    value={formData.bio}
+                    onChange={handleChange}
+                    rows="4"
+                    className="w-full border border-gray-300 rounded-lg px-4 py-3 outline-none focus:ring-2 focus:ring-indigo-500"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-1">
+                    Resume Link
+                  </label>
+                  <input
+                    type="text"
+                    name="resume"
+                    value={formData.resume}
+                    onChange={handleChange}
+                    className="w-full border border-gray-300 rounded-lg px-4 py-3 outline-none focus:ring-2 focus:ring-indigo-500"
+                  />
+                </div>
+              </>
+            )}
 
             <div className="flex gap-3">
               <button

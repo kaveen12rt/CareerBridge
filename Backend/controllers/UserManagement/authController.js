@@ -769,6 +769,12 @@ export const checkAuth = async (req, res) => {
           role: user.role,
           isEmailVerified: user.isEmailVerified,
           profileCompleted: user.profileCompleted,
+          ...(user.role === "student" && {
+            studentProfile: user.studentProfile,
+          }),
+          ...(user.role === "company" && {
+            companyProfile: user.companyProfile,
+          }),
         },
       },
     });

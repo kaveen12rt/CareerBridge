@@ -13,6 +13,7 @@ import logo from "./assets/logo1.png";
 import CompanyJobsMain from "./pages/CompanyJobs/CompanyJobsMain";
 import JobDetails from "./pages/CompanyJobs/JobDetails";
 import StudentHome from "./pages/StudentProfile/StudentHome";
+import CompanyHome from "./pages/CompanyHome";
 import SignIn from "./pages/SignIn";
 import SignUp from "./pages/SignUp";
 import ForgotPassword from "./pages/ForgotPassword";
@@ -359,7 +360,7 @@ function MainFooter() {
 
 function UserTopNav({ currentUser, checkingAuth, handleLogout }) {
   return (
-    <nav className="bg-[#1f3a8a] px-8 py-4 flex items-center justify-between shadow-md border-b border-blue-700">
+    <nav className="sticky top-0 z-50 bg-[#1f3a8a] px-8 py-4 flex items-center justify-between shadow-md border-b border-blue-700">
       <Link to="/" className="flex items-center">
         <img
           src={logo}
@@ -431,7 +432,11 @@ function UserPortal({ currentUser, checkingAuth, handleLogout }) {
   return (
     <div className="min-h-screen bg-white flex flex-col">
       <div className="flex-1">
-        <StudentHome currentUser={currentUser} />
+        {currentUser?.role === "company" ? (
+          <CompanyHome currentUser={currentUser} />
+        ) : (
+          <StudentHome currentUser={currentUser} />
+        )}
       </div>
 
       <MainFooter />
@@ -557,12 +562,21 @@ function AppContent() {
               />
             }
           />
-          <Route path="/jobs" element={<JobSearch />} />
-          <Route path="/jobs/:id" element={<JobDetails />} />
+          <Route
+            path="/jobs"
+            element={<JobSearch currentUser={currentUser} />}
+          />
+          <Route
+            path="/jobs/:id"
+            element={<JobDetails />}
+          />
           <Route path="/smart-matching" element={<SmartMatching />} />
           <Route path="/cv-generator" element={<CVGenerator />} />
           <Route path="/profile" element={<ProfilePage />} />
-          <Route path="/profile/edit" element={<EditProfilePage />} />
+          <Route
+            path="/profile/edit"
+            element={<EditProfilePage onUserUpdated={setCurrentUser} />}
+          />
           <Route path="/change-password" element={<ChangePassword />} />
           <Route path="/signin" element={<SignIn />} />
           <Route path="/signup" element={<SignUp />} />

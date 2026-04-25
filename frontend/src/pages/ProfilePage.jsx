@@ -52,7 +52,179 @@ function ProfilePage() {
   }
 
   const sp = user.studentProfile || {};
+  const cp = user.companyProfile || {};
   const initials = `${user.firstName?.[0] || ""}${user.lastName?.[0] || ""}`.toUpperCase();
+
+  if (user.role === "company") {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 px-4 py-8 md:py-10">
+        <div className="max-w-6xl mx-auto">
+          <div className="bg-white rounded-3xl shadow-xl overflow-hidden border border-indigo-100 mb-8">
+            <div className="h-32 md:h-36 bg-gradient-to-r from-indigo-900 via-indigo-700 to-blue-600" />
+
+            <div className="px-6 md:px-8 pb-8 -mt-14">
+              <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6">
+                <div className="flex flex-col sm:flex-row sm:items-center gap-5">
+                  <div className="w-24 h-24 md:w-28 md:h-28 rounded-full border-4 border-white bg-white shadow-lg flex items-center justify-center text-2xl md:text-3xl font-bold text-indigo-900 shrink-0">
+                    {initials}
+                  </div>
+
+                  <div>
+                    <div className="flex flex-wrap gap-2 mb-3">
+                      <span className="bg-indigo-100 text-indigo-800 px-3 py-1 rounded-full text-sm font-semibold">
+                        Company Profile
+                      </span>
+
+                      <span
+                        className={`px-3 py-1 rounded-full text-sm font-semibold ${
+                          user.profileCompleted
+                            ? "bg-emerald-100 text-emerald-700"
+                            : "bg-amber-100 text-amber-700"
+                        }`}
+                      >
+                        {user.profileCompleted
+                          ? "Profile Completed"
+                          : "Profile Incomplete"}
+                      </span>
+                    </div>
+
+                    <h1 className="text-3xl md:text-4xl font-bold text-slate-900">
+                      {cp.companyName || "Your Company"}
+                    </h1>
+
+                    <p className="text-slate-500 mt-2 break-all">{user.email}</p>
+                  </div>
+                </div>
+
+                <div className="flex gap-3 flex-wrap">
+                  <button
+                    onClick={() => navigate("/profile/edit")}
+                    className="bg-indigo-600 text-white px-5 py-3 rounded-xl font-semibold hover:bg-indigo-700 transition shadow-md"
+                  >
+                    Edit Profile
+                  </button>
+
+                  <Link
+                    to="/"
+                    className="bg-white border border-indigo-200 text-indigo-900 px-5 py-3 rounded-xl font-semibold hover:bg-indigo-50 transition"
+                  >
+                    Back to Home
+                  </Link>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="grid lg:grid-cols-3 gap-8">
+            <div className="lg:col-span-2 space-y-6">
+              <div className="bg-white rounded-2xl shadow-lg border border-indigo-100 p-6">
+                <h2 className="text-xl font-bold text-indigo-950 mb-4">
+                  Company Details
+                </h2>
+
+                <div className="grid md:grid-cols-2 gap-3">
+                  <div className="bg-slate-50 rounded-lg border border-slate-200 p-3">
+                    <p className="text-xs text-slate-500 mb-1">Industry</p>
+                    <p className="text-sm font-semibold text-slate-800">
+                      {cp.industry || "-"}
+                    </p>
+                  </div>
+
+                  <div className="bg-slate-50 rounded-lg border border-slate-200 p-3">
+                    <p className="text-xs text-slate-500 mb-1">Location</p>
+                    <p className="text-sm font-semibold text-slate-800">
+                      {cp.location || "-"}
+                    </p>
+                  </div>
+
+                  <div className="bg-slate-50 rounded-lg border border-slate-200 p-3">
+                    <p className="text-xs text-slate-500 mb-1">Employee Count</p>
+                    <p className="text-sm font-semibold text-slate-800">
+                      {cp.employeeCount || "-"}
+                    </p>
+                  </div>
+
+                  <div className="bg-slate-50 rounded-lg border border-slate-200 p-3">
+                    <p className="text-xs text-slate-500 mb-1">Website</p>
+                    {cp.website ? (
+                      <a
+                        href={cp.website}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-sm font-semibold text-indigo-700 hover:underline break-all"
+                      >
+                        {cp.website}
+                      </a>
+                    ) : (
+                      <p className="text-sm font-semibold text-slate-800">-</p>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-white rounded-2xl shadow-lg border border-indigo-100 p-6">
+                <h2 className="text-xl font-bold text-indigo-950 mb-4">
+                  About
+                </h2>
+                <div className="bg-slate-50 rounded-xl border border-slate-200 p-4 min-h-[140px]">
+                  <p className="text-slate-700 leading-7 whitespace-pre-wrap break-words">
+                    {cp.description || "No company description added yet."}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-6">
+              <div className="bg-gradient-to-br from-indigo-900 via-indigo-700 to-blue-600 rounded-2xl shadow-lg p-6 text-white">
+                <h2 className="text-xl font-bold mb-5">Profile Summary</h2>
+
+                <div className="space-y-3">
+                  <div className="bg-white/10 rounded-xl p-4">
+                    <p className="text-sm text-indigo-100">Company Name</p>
+                    <p className="text-lg font-bold">
+                      {cp.companyName || "Not set"}
+                    </p>
+                  </div>
+                  <div className="bg-white/10 rounded-xl p-4">
+                    <p className="text-sm text-indigo-100">Industry</p>
+                    <p className="text-lg font-bold">
+                      {cp.industry || "Not set"}
+                    </p>
+                  </div>
+                  <div className="bg-white/10 rounded-xl p-4">
+                    <p className="text-sm text-indigo-100">Status</p>
+                    <p className="text-lg font-bold">
+                      {user.profileCompleted ? "Completed" : "Incomplete"}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-white rounded-2xl shadow-lg border border-indigo-100 p-6">
+                <h2 className="text-xl font-bold text-indigo-950 mb-4">
+                  Account
+                </h2>
+                <div className="space-y-3 text-sm">
+                  <div className="flex items-center justify-between gap-4">
+                    <span className="text-slate-500">Contact</span>
+                    <span className="font-semibold text-slate-800 text-right">
+                      {user.firstName} {user.lastName}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between gap-4">
+                    <span className="text-slate-500">Email</span>
+                    <span className="font-semibold text-slate-800 text-right break-all">
+                      {user.email}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-blue-100 px-4 py-8 md:py-10">

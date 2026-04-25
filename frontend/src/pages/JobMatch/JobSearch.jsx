@@ -8,6 +8,7 @@ import {
   ExclamationTriangleIcon,
 } from '@heroicons/react/24/solid';
 import heroImage from '../../assets/job-hero.jpg';
+import JobPostingForm from '../CompanyJobs/JobPostingForm';
 
 const getDaysLeft = (deadline) => {
   if (!deadline) return null;
@@ -34,7 +35,7 @@ const getLogoFallback = (companyName) => {
   return initials || 'CO';
 };
 
-const JobSearch = () => {
+const JobSearch = ({ currentUser }) => {
   const navigate = useNavigate();
   const [jobs, setJobs] = useState([]);
   const [allActiveJobs, setAllActiveJobs] = useState([]);
@@ -46,11 +47,14 @@ const JobSearch = () => {
   const [jobTypeFilter, setJobTypeFilter] = useState('all');
   const [sortBy, setSortBy] = useState('recent');
   const [urgentOnly, setUrgentOnly] = useState(false);
+  const [showPostJob, setShowPostJob] = useState(false);
 
   useEffect(() => {
     const fetchFilterOptions = async () => {
       try {
-        const response = await fetch('http://localhost:5000/api/jobs?status=active');
+        const response = await fetch('http://localhost:5000/api/jobs?status=active', {
+          credentials: 'include',
+        });
         const data = await response.json();
 
         if (!response.ok) {
@@ -82,7 +86,9 @@ const JobSearch = () => {
         params.append('sort', sortBy);
         if (urgentOnly) params.append('urgent', 'true');
 
-        const response = await fetch(`http://localhost:5000/api/jobs?${params.toString()}`);
+        const response = await fetch(`http://localhost:5000/api/jobs?${params.toString()}`, {
+          credentials: 'include',
+        });
         const data = await response.json();
 
         if (!response.ok) {
@@ -131,6 +137,15 @@ const JobSearch = () => {
             <span className="inline-flex items-center gap-2 text-xs font-semibold tracking-wide uppercase text-orange-200 bg-white/10 px-3 py-1 rounded-full">
               CareerBridge Job Search
             </span>
+            {currentUser?.role === 'company' && (
+              <button
+                type="button"
+                onClick={() => setShowPostJob(true)}
+                className="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg font-semibold shadow-lg transition"
+              >
+                Post Job
+              </button>
+            )}
           </div>
 
           <div className="mt-6">
@@ -401,6 +416,41 @@ const JobSearch = () => {
             )}
           </main>
       </section>
+
+      {showPostJob && currentUser?.role === 'company' && (
+        <div className="fixed inset-0 z-[40] bg-slate-900/60 overflow-y-auto">
+          <div className="min-h-full flex items-start justify-center p-4 sm:p-8">
+            <div className="w-full max-w-4xl bg-white rounded-2xl shadow-2xl border border-blue-100 overflow-hidden">
+              <div className="flex items-center justify-end px-4 py-3 border-b border-blue-100">
+                <button
+                  type="button"
+                  onClick={() => setShowPostJob(false)}
+                  className="w-10 h-10 rounded-full hover:bg-slate-100 flex items-center justify-center text-slate-700"
+                  aria-label="Close"
+                >
+                  ×
+                </button>
+              </div>
+
+              <div className="p-0">
+                <JobPostingForm
+                  embedded
+                  initialValues={{
+                    companyName: currentUser?.companyProfile?.companyName || '',
+                    companyImage: currentUser?.companyProfile?.logo || '',
+                  }}
+                  onPosted={() => {
+                    setShowPostJob(false);
+                    // refresh list (re-run effect by toggling a filter)
+                    setSortBy((prev) => (prev === 'recent' ? 'recent' : 'recent'));
+                  }}
+                  onClose={() => setShowPostJob(false)}
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
