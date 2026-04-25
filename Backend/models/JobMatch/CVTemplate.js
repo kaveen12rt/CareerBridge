@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from "mongoose";
 
 const cvSectionSchema = new mongoose.Schema(
   {
@@ -23,6 +23,10 @@ const cvTemplateSchema = new mongoose.Schema(
       trim: true,
       index: true
     },
+    templateId: {
+      type: String,
+      default: ''
+    },
     name: {
       type: String,
       required: true,
@@ -39,6 +43,10 @@ const cvTemplateSchema = new mongoose.Schema(
     isDefault: {
       type: Boolean,
       default: false
+    },
+    profileImage: {
+      type: String,
+      default: ''
     }
   },
   {
@@ -48,4 +56,6 @@ const cvTemplateSchema = new mongoose.Schema(
 
 cvTemplateSchema.index({ studentId: 1, createdAt: -1 });
 
-module.exports = mongoose.model('CVTemplate', cvTemplateSchema);
+const CVTemplate = mongoose.model("CVTemplate", cvTemplateSchema);
+
+export default CVTemplate;

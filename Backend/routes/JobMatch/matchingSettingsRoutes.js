@@ -1,22 +1,27 @@
-const express = require('express');
-const router = express.Router();
-const {
+import express from 'express';
+import { authenticate } from '../../middlewares/authMiddleware.js';
+import {
   getSettings,
   upsertSettings,
   clearSettings,
   previewMatches
-} = require('../../controllers/JobMatch/matchingSettingsController');
+} from '../../controllers/JobMatch/matchingSettingsController.js';
 
-// GET /api/job-match/settings/:studentId
-router.get('/settings/:studentId', getSettings);
+const router = express.Router();
 
-// PUT /api/job-match/settings/:studentId
-router.put('/settings/:studentId', upsertSettings);
+// All settings routes require authentication
+router.use(authenticate);
 
-// DELETE /api/job-match/settings/:studentId
-router.delete('/settings/:studentId', clearSettings);
+// GET    /api/job-match/settings
+router.get('/settings', getSettings);
 
-// GET /api/job-match/preview/:studentId
-router.get('/preview/:studentId', previewMatches);
+// PUT    /api/job-match/settings
+router.put('/settings', upsertSettings);
 
-module.exports = router;
+// DELETE /api/job-match/settings
+router.delete('/settings', clearSettings);
+
+// GET    /api/job-match/preview
+router.get('/preview', previewMatches);
+
+export default router;

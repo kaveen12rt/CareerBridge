@@ -29,8 +29,10 @@ import ContactUsPage from "./pages/ContactUsPage";
 import JobSearch from "./pages/JobMatch/JobSearch";
 import SmartMatching from "./pages/JobMatch/SmartMatching";
 import CVGenerator from "./pages/JobMatch/CVGenerator";
+import SavedCVs from "./pages/JobMatch/SavedCVs";
 import MyApplications from "./pages/JobMatch/MyApplications";
 import ApplicationsDashboard from "./pages/JobMatch/ApplicationsDashboard";
+import JobMatchAdmin from "./pages/JobMatch/JobMatchAdmin";
 
 function AdminDashboard() {
   const [apiStatus, setApiStatus] = useState("Checking...");
@@ -164,16 +166,23 @@ function AdminDashboard() {
             </p>
           </button>
 
-          <div className="admin-card">
+          <button
+            type="button"
+            onClick={() => navigate("/admin/jobmatch")}
+            className="admin-card"
+          >
             <div className="admin-card-header">
               <span className="admin-card-icon">JM</span>
-              <span className="admin-card-chip">User portal</span>
+              <span className="admin-card-arrow">→</span>
             </div>
             <h3 className="text-lg font-bold text-slate-900">JobMatch</h3>
             <p className="text-sm text-slate-500">
               Member 3 — Job Search + Smart Matching + CV Generator
             </p>
-          </div>
+            <p className="text-xs text-orange-500 mt-2 font-semibold">
+              Click to Enter
+            </p>
+          </button>
 
           <button
             type="button"
@@ -460,6 +469,7 @@ function AppContent() {
     "/admin/company",
     "/admin/student-profile",
     "/admin/applications",
+    "/admin/jobmatch",
   ];
 
   const publicAuthRoutes = ["/signin", "/signup", "/forgot-password"];
@@ -572,6 +582,7 @@ function AppContent() {
           />
           <Route path="/smart-matching" element={<SmartMatching />} />
           <Route path="/cv-generator" element={<CVGenerator />} />
+          <Route path="/cv-saved" element={<SavedCVs />} />
           <Route path="/profile" element={<ProfilePage />} />
           <Route
             path="/profile/edit"
@@ -583,6 +594,7 @@ function AppContent() {
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password/:token" element={<ResetPassword />} />
           <Route path="/my-applications" element={<MyApplications />} />
+          <Route path="/admin/jobmatch" element={<JobMatchAdmin />} />
           <Route path="/admin/applications" element={<ApplicationsDashboard />} />
           <Route path="/feedback" element={<FeedbackPage />} />
           <Route path="/admin" element={<AdminDashboard />} />

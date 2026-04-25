@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 const matchSettingsSchema = new mongoose.Schema(
   {
@@ -28,7 +28,7 @@ const matchSettingsSchema = new mongoose.Schema(
     ],
     minimumMatchScore: {
       type: Number,
-      default: 50,
+      default: 0,
       min: 0,
       max: 100
     },
@@ -45,4 +45,6 @@ const matchSettingsSchema = new mongoose.Schema(
 
 matchSettingsSchema.index({ studentId: 1 }, { unique: true });
 
-module.exports = mongoose.model('MatchSettings', matchSettingsSchema);
+const MatchSettings = mongoose.model('MatchSettings', matchSettingsSchema);
+
+export default MatchSettings;

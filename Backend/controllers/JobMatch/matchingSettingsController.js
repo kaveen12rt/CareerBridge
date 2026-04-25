@@ -1,16 +1,22 @@
-const MatchSettings = require('../../models/JobMatch/MatchSettings');
-const Job = require('../../models/CompanyJobs/Job');
+import MatchSettings from '../../models/JobMatch/MatchSettings.js';
+import Job from '../../models/CompanyJobs/Job.js';
 
 const normalize = (value) => String(value || '').trim().toLowerCase();
 
 const calculateMatchScore = (job, settings) => {
-  const jobSkills = (job.skills || []).map(normalize);
+  const jobSkills = [
+    ...(job.skills || []),
+    ...(job.requirements || [])
+  ].map(normalize);
+
   const preferredSkills = (settings.preferredSkills || []).map(normalize);
 
   const skillScore =
     preferredSkills.length === 0
       ? 0
-      : (preferredSkills.filter((skill) => jobSkills.includes(skill)).length / preferredSkills.length) * 50;
+      : (preferredSkills.filter((skill) => jobSkills.some((js) => js.includes(skill) || skill.includes(js))).length /
+          preferredSkills.length) *
+        50;
 
   const locationScore = (settings.preferredLocations || [])
     .map(normalize)
@@ -27,13 +33,23 @@ const calculateMatchScore = (job, settings) => {
   return Math.round(skillScore + locationScore + typeScore);
 };
 
-const getSettings = async (req, res) => {
+export const getSettings = async (req, res) => {
   try {
-    const { studentId } = req.params;
+    const studentId = String(req.user?.id || '');
+    if (!studentId) return res.status(401).json({ message: 'Unauthorized' });
+
     const settings = await MatchSettings.findOne({ studentId });
 
     if (!settings) {
-      return res.status(404).json({ message: 'Match settings not found' });
+      // Return empty defaults instead of 404 so the frontend can render the form
+      return res.json({
+        studentId,
+        preferredLocations: [],
+        preferredJobTypes: [],
+        preferredSkills: [],
+        minimumMatchScore: 0,
+        preferredSalaryMin: 0
+      });
     }
 
     res.json(settings);
@@ -42,15 +58,16 @@ const getSettings = async (req, res) => {
   }
 };
 
-const upsertSettings = async (req, res) => {
+export const upsertSettings = async (req, res) => {
   try {
-    const { studentId } = req.params;
+    const studentId = String(req.user?.id || '');
+    if (!studentId) return res.status(401).json({ message: 'Unauthorized' });
 
     const payload = {
       preferredLocations: req.body.preferredLocations || [],
       preferredJobTypes: req.body.preferredJobTypes || [],
       preferredSkills: req.body.preferredSkills || [],
-      minimumMatchScore: req.body.minimumMatchScore ?? 50,
+      minimumMatchScore: req.body.minimumMatchScore ?? 0,
       preferredSalaryMin: req.body.preferredSalaryMin ?? 0
     };
 
@@ -66,9 +83,11 @@ const upsertSettings = async (req, res) => {
   }
 };
 
-const clearSettings = async (req, res) => {
+export const clearSettings = async (req, res) => {
   try {
-    const { studentId } = req.params;
+    const studentId = String(req.user?.id || '');
+    if (!studentId) return res.status(401).json({ message: 'Unauthorized' });
+
     await MatchSettings.findOneAndDelete({ studentId });
     res.json({ message: 'Match settings cleared' });
   } catch (error) {
@@ -76,20 +95,22 @@ const clearSettings = async (req, res) => {
   }
 };
 
-const previewMatches = async (req, res) => {
+export const previewMatches = async (req, res) => {
   try {
-    const { studentId } = req.params;
+    const studentId = String(req.user?.id || '');
+    if (!studentId) return res.status(401).json({ message: 'Unauthorized' });
+
     const settings = await MatchSettings.findOne({ studentId });
 
     if (!settings) {
-      return res.status(404).json({ message: 'Match settings not found' });
+      return res.status(404).json({ message: 'Match settings not found. Save your preferences first.' });
     }
 
     const jobs = await Job.find({ status: 'active' }).sort({ createdAt: -1 });
 
     const ranked = jobs
       .map((job) => ({ ...job.toObject(), matchScore: calculateMatchScore(job, settings) }))
-      .filter((job) => job.matchScore >= settings.minimumMatchScore)
+      .filter((job) => job.matchScore >= (settings.minimumMatchScore || 0))
       .sort((a, b) => b.matchScore - a.matchScore);
 
     res.json({
@@ -100,11 +121,4 @@ const previewMatches = async (req, res) => {
   } catch (error) {
     res.status(500).json({ message: 'Error generating match preview', error: error.message });
   }
-};
-
-module.exports = {
-  getSettings,
-  upsertSettings,
-  clearSettings,
-  previewMatches
 };
