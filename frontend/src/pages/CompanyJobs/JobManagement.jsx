@@ -1,5 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { PencilIcon, TrashIcon, EyeIcon, PauseIcon, PlayIcon, PlusIcon, XMarkIcon } from '@heroicons/react/24/outline';
+import { analyzeJobPostQuality } from './jobQualityAnalyzer';
 
 const JobManagement = () => {
   const [jobs, setJobs] = useState([]);
@@ -78,8 +79,21 @@ const JobManagement = () => {
   };
 
   const filteredJobs = jobs.filter(job => {
-    const matchesSearch = job.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         job.department.toLowerCase().includes(searchTerm.toLowerCase());
+    const term = searchTerm.trim().toLowerCase();
+    const title = String(job?.title || '').toLowerCase();
+    const department = String(job?.department || '').toLowerCase();
+    const companyName = String(job?.companyName || '').toLowerCase();
+    const location = String(job?.location || '').toLowerCase();
+    const type = String(job?.type || '').toLowerCase();
+
+    const matchesSearch =
+      !term ||
+      title.includes(term) ||
+      department.includes(term) ||
+      companyName.includes(term) ||
+      location.includes(term) ||
+      type.includes(term);
+
     const matchesStatus = statusFilter === 'all' || job.status === statusFilter;
     return matchesSearch && matchesStatus;
   });
@@ -97,17 +111,39 @@ const JobManagement = () => {
     }
   };
 
+  const getCompanyInitials = (name) => {
+    const parts = String(name || 'Company').trim().split(' ').filter(Boolean);
+    const initials = parts.slice(0, 2).map((part) => part[0]?.toUpperCase() || '').join('');
+    return initials || 'CO';
+  };
+
+  const getQualityBadge = (score) => {
+    if (score >= 85) {
+      return 'bg-emerald-100 text-emerald-800';
+    }
+
+    if (score >= 70) {
+      return 'bg-blue-100 text-blue-800';
+    }
+
+    if (score >= 50) {
+      return 'bg-amber-100 text-amber-800';
+    }
+
+    return 'bg-rose-100 text-rose-800';
+  };
+
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
+    <div className="min-h-screen bg-slate-50 p-6">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Job Management</h1>
-          <p className="text-gray-600 mt-2">View, edit, and manage your job postings</p>
+        <div className="mb-8 company-fade-up">
+          <h1 className="text-3xl font-bold text-blue-900">Job Management</h1>
+          <p className="text-slate-600 mt-2">View, edit, and manage your job postings</p>
         </div>
 
         {/* Filters */}
-        <div className="bg-white rounded-lg shadow-md p-6 mb-6">
+        <div className="bg-white rounded-2xl shadow-lg border border-blue-100 p-6 mb-6 company-card">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -117,8 +153,8 @@ const JobManagement = () => {
                 type="text"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                placeholder="Search by title or department..."
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="Search by title, company, department, location, or type..."
+                className="w-full px-3 py-2 border border-blue-200 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
             <div>
@@ -128,7 +164,7 @@ const JobManagement = () => {
               <select
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-blue-200 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <option value="all">All Statuses</option>
                 <option value="active">Active</option>
@@ -139,7 +175,7 @@ const JobManagement = () => {
             <div className="flex items-end">
               <button
                 onClick={fetchJobs}
-                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="px-4 py-2 bg-blue-900 text-white rounded-md hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 Refresh
               </button>
@@ -148,53 +184,81 @@ const JobManagement = () => {
         </div>
 
         {/* Jobs List */}
-        <div className="bg-white rounded-lg shadow-md overflow-hidden">
-          <div className="px-6 py-4 border-b border-gray-200">
-            <h2 className="text-lg font-semibold text-gray-900">
+        <div className="bg-white rounded-2xl shadow-lg border border-blue-100 overflow-hidden company-card">
+          <div className="px-6 py-4 border-b border-blue-100">
+            <h2 className="text-lg font-semibold text-blue-900">
               Your Jobs ({filteredJobs.length})
             </h2>
           </div>
           
           <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
+              <thead className="bg-blue-50">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-blue-700 uppercase tracking-wider">
                     Job Details
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-blue-700 uppercase tracking-wider">
                     Location & Type
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-blue-700 uppercase tracking-wider">
                     Applications
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-blue-700 uppercase tracking-wider">
+                    Quality
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-blue-700 uppercase tracking-wider">
                     Status
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-blue-700 uppercase tracking-wider">
                     Actions
                   </th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
                 {filteredJobs.map((job) => (
-                  <tr key={job._id} className="hover:bg-gray-50">
+                  (() => {
+                    const quality = analyzeJobPostQuality(job);
+                    return (
+                  <tr key={job._id} className="hover:bg-blue-50">
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div>
-                        <div className="text-sm font-medium text-gray-900">{job.title}</div>
-                        <div className="text-sm text-gray-500">{job.department}</div>
-                        <div className="text-xs text-gray-400">
-                          Posted: {new Date(job.createdAt).toLocaleDateString()}
+                      <div className="flex items-start gap-3">
+                        <div className="w-10 h-10 rounded-md overflow-hidden border border-gray-200 bg-gray-50 flex items-center justify-center text-xs font-semibold text-gray-600 flex-shrink-0">
+                          {job.companyImage ? (
+                            <img
+                              src={job.companyImage}
+                              alt={job.companyName || 'Company'}
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            getCompanyInitials(job.companyName)
+                          )}
+                        </div>
+                        <div>
+                          <div className="text-sm font-medium text-blue-900">{job.title}</div>
+                          <div className="text-sm text-slate-500">{job.companyName || 'N/A'}</div>
+                          <div className="text-sm text-slate-500">{job.department}</div>
+                          <div className="text-xs text-slate-400">
+                            Posted: {new Date(job.createdAt).toLocaleDateString()}
+                          </div>
                         </div>
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">{job.location}</div>
-                      <div className="text-sm text-gray-500 capitalize">{job.type}</div>
+                      <div className="text-sm text-blue-900">{job.location}</div>
+                      <div className="text-sm text-slate-500 capitalize">{job.type}</div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">{job.applicationsCount || 0} applications</div>
-                      <div className="text-sm text-gray-500">{job.interviewsCount || 0} interviews</div>
+                      <div className="text-sm text-blue-900">{job.applicationsCount || 0} applications</div>
+                      <div className="text-sm text-slate-500">{job.interviewsCount || 0} interviews</div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="flex flex-col gap-1">
+                        <span className={`inline-flex w-fit px-2 py-1 text-xs font-semibold rounded-full ${getQualityBadge(quality.score)}`}>
+                          {quality.score}/100
+                        </span>
+                        <span className="text-xs text-gray-500">{quality.tier}</span>
+                      </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(job.status)}`}>
@@ -205,7 +269,7 @@ const JobManagement = () => {
                       <div className="flex items-center space-x-2">
                         <button
                           onClick={() => setEditingJob(job)}
-                          className="text-blue-600 hover:text-blue-900 p-1 rounded hover:bg-blue-50"
+                          className="text-blue-900 hover:text-blue-700 p-1 rounded hover:bg-blue-50"
                           title="Edit Job"
                         >
                           <PencilIcon className="h-4 w-4" />
@@ -232,6 +296,8 @@ const JobManagement = () => {
                       </div>
                     </td>
                   </tr>
+                    );
+                  })()
                 ))}
               </tbody>
             </table>
@@ -252,10 +318,10 @@ const JobManagement = () => {
 
         {/* Edit Job Modal */}
         {editingJob && (
-          <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-            <div className="relative top-10 mx-auto p-5 border max-w-4xl shadow-lg rounded-md bg-white mb-10">
+          <div className="fixed inset-0 bg-slate-900/60 overflow-y-auto h-full w-full z-50">
+            <div className="relative top-10 mx-auto p-5 border border-blue-100 max-w-4xl shadow-2xl rounded-2xl bg-white mb-10">
               <div className="mt-3">
-                <h3 className="text-lg font-medium text-gray-900 mb-4">Edit Job</h3>
+                <h3 className="text-lg font-medium text-blue-900 mb-4">Edit Job</h3>
                 <JobEditForm
                   job={editingJob}
                   onSave={(updatedData) => handleUpdateJob(editingJob._id, updatedData)}
@@ -274,6 +340,9 @@ const JobManagement = () => {
 // Job Edit Form Component
 const JobEditForm = ({ job, onSave, onCancel, loading }) => {
   const [formData, setFormData] = useState({
+    companyName: job.companyName || '',
+    companyImage: job.companyImage || '',
+    companyEmail: job.companyEmail || '',
     title: job.title || '',
     department: job.department || '',
     location: job.location || '',
@@ -287,9 +356,42 @@ const JobEditForm = ({ job, onSave, onCancel, loading }) => {
     deadline: job.deadline ? new Date(job.deadline).toISOString().split('T')[0] : '',
     status: job.status || 'active'
   });
+  const qualityAnalysis = useMemo(() => analyzeJobPostQuality(formData), [formData]);
+
+  const getQualityTheme = (score) => {
+    if (score >= 85) {
+      return 'bg-emerald-50 border-emerald-200 text-emerald-700';
+    }
+
+    if (score >= 70) {
+      return 'bg-blue-50 border-blue-200 text-blue-700';
+    }
+
+    if (score >= 50) {
+      return 'bg-amber-50 border-amber-200 text-amber-700';
+    }
+
+    return 'bg-rose-50 border-rose-200 text-rose-700';
+  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
+
+    if (qualityAnalysis.criticalIssues.length > 0) {
+      alert(`Please fix these issues before saving:\n- ${qualityAnalysis.criticalIssues.join('\n- ')}`);
+      return;
+    }
+
+    if (qualityAnalysis.score < 70) {
+      const shouldContinue = confirm(
+        `Job quality score is ${qualityAnalysis.score}/100 (${qualityAnalysis.tier}). Save anyway?`
+      );
+
+      if (!shouldContinue) {
+        return;
+      }
+    }
+
     onSave(formData);
   };
 
@@ -299,6 +401,20 @@ const JobEditForm = ({ job, onSave, onCancel, loading }) => {
       ...prev,
       [name]: value
     }));
+  };
+
+  const handleFileChange = (e, field) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setFormData((prev) => ({
+        ...prev,
+        [field]: reader.result,
+      }));
+    };
+    reader.readAsDataURL(file);
   };
 
   const handleArrayChange = (index, value, field) => {
@@ -329,8 +445,57 @@ const JobEditForm = ({ job, onSave, onCancel, loading }) => {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4 max-h-[70vh] overflow-y-auto pr-2">
+      {/* Quality Analyzer Panel */}
+      <div className={`border rounded-lg p-4 ${getQualityTheme(qualityAnalysis.score)}`}>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <h2 className="text-lg font-semibold">AI Job Post Quality Analyzer</h2>
+            <p className="text-sm opacity-90">Score updates live as you edit the vacancy details.</p>
+          </div>
+          <div className="text-right">
+            <p className="text-sm font-medium">Quality Score</p>
+            <p className="text-3xl font-bold">{qualityAnalysis.score}/100</p>
+            <p className="text-xs font-semibold uppercase tracking-wide">{qualityAnalysis.tier}</p>
+          </div>
+        </div>
+        {qualityAnalysis.warnings.length > 0 && (
+          <div className="mt-4">
+            <p className="text-sm font-semibold">Warnings</p>
+            <ul className="mt-1 text-sm list-disc list-inside space-y-1">
+              {qualityAnalysis.warnings.slice(0, 4).map((warning, index) => (
+                <li key={`${warning}-${index}`}>{warning}</li>
+              ))}
+            </ul>
+          </div>
+        )}
+      </div>
+
       {/* Basic Information */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Company Name *</label>
+          <input
+            type="text"
+            name="companyName"
+            value={formData.companyName}
+            onChange={handleChange}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            required
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Company Email</label>
+          <input
+            type="email"
+            name="companyEmail"
+            value={formData.companyEmail}
+            onChange={handleChange}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            placeholder="e.g., careers@company.com"
+          />
+        </div>
+
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">Job Title *</label>
           <input
@@ -428,6 +593,20 @@ const JobEditForm = ({ job, onSave, onCancel, loading }) => {
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
         </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Company Photo</label>
+          <input
+            type="file"
+            accept="image/*"
+            onChange={(e) => handleFileChange(e, 'companyImage')}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+          {formData.companyImage && (
+            <img src={formData.companyImage} alt="Company" className="mt-2 h-16 w-16 rounded-md object-cover" />
+          )}
+        </div>
+
       </div>
 
       {/* Description */}
@@ -530,18 +709,18 @@ const JobEditForm = ({ job, onSave, onCancel, loading }) => {
       </div>
 
       {/* Submit Buttons */}
-      <div className="flex justify-end space-x-2 pt-4 border-t">
+      <div className="flex justify-end space-x-2 pt-4 border-t border-blue-100">
         <button
           type="button"
           onClick={onCancel}
-          className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
+          className="px-4 py-2 text-sm font-medium text-slate-700 bg-white border border-blue-200 rounded-md hover:bg-blue-50"
         >
           Cancel
         </button>
         <button
           type="submit"
           disabled={loading}
-          className="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 disabled:opacity-50"
+          className="px-4 py-2 text-sm font-medium text-white bg-orange-500 border border-transparent rounded-md hover:bg-orange-600 disabled:opacity-50"
         >
           {loading ? 'Saving...' : 'Save Changes'}
         </button>

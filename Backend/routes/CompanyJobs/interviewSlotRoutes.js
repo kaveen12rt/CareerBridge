@@ -1,6 +1,5 @@
-const express = require('express');
-const router = express.Router();
-const {
+import express from "express";
+import {
   getInterviewSlotsByJob,
   getInterviewSlotById,
   createInterviewSlot,
@@ -8,31 +7,37 @@ const {
   deleteInterviewSlot,
   bookInterviewSlot,
   cancelInterviewSlot,
-  getAvailableSlots
-} = require('../../controllers/CompanyJobs/interviewSlotController');
+  getAvailableSlots,
+  getAllInterviewSlots,
+} from "../../controllers/CompanyJobs/interviewSlotController.js";
 
-// GET /api/interview-slots/job/:jobId - Get all slots for a job
-router.get('/job/:jobId', getInterviewSlotsByJob);
+const router = express.Router();
 
-// GET /api/interview-slots/job/:jobId/available - Get available slots for a job
-router.get('/job/:jobId/available', getAvailableSlots);
+// Admin: all slots across all jobs (must be before /:id)
+router.get("/admin/all", getAllInterviewSlots);
 
-// GET /api/interview-slots/:id - Get single slot
-router.get('/:id', getInterviewSlotById);
+// GET /api/interview-slots/job/:jobId
+router.get("/job/:jobId", getInterviewSlotsByJob);
 
-// POST /api/interview-slots - Create new slot
-router.post('/', createInterviewSlot);
+// GET /api/interview-slots/job/:jobId/available
+router.get("/job/:jobId/available", getAvailableSlots);
 
-// PUT /api/interview-slots/:id - Update slot
-router.put('/:id', updateInterviewSlot);
+// GET /api/interview-slots/:id
+router.get("/:id", getInterviewSlotById);
 
-// DELETE /api/interview-slots/:id - Delete slot
-router.delete('/:id', deleteInterviewSlot);
+// POST /api/interview-slots
+router.post("/", createInterviewSlot);
 
-// POST /api/interview-slots/:id/book - Book a slot (for students)
-router.post('/:id/book', bookInterviewSlot);
+// PUT /api/interview-slots/:id
+router.put("/:id", updateInterviewSlot);
 
-// POST /api/interview-slots/:id/cancel - Cancel booking (for students)
-router.post('/:id/cancel', cancelInterviewSlot);
+// DELETE /api/interview-slots/:id
+router.delete("/:id", deleteInterviewSlot);
 
-module.exports = router;
+// POST /api/interview-slots/:id/book
+router.post("/:id/book", bookInterviewSlot);
+
+// POST /api/interview-slots/:id/cancel
+router.post("/:id/cancel", cancelInterviewSlot);
+
+export default router;

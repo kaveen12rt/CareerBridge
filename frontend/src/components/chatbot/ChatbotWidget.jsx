@@ -2,6 +2,9 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useLocation } from "react-router-dom";
 
 const STORAGE_KEY = "careerbridge_chat_session_id";
+const API_BASE_URL =
+  import.meta.env.VITE_API_BASE_URL || "http://localhost:5000";
+const GUEST_STORAGE_SCOPE = "guest";
 
 const createSessionId = () => {
   if (typeof crypto !== "undefined" && crypto.randomUUID) {
@@ -10,12 +13,16 @@ const createSessionId = () => {
   return `chat_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`;
 };
 
-const getOrCreateSessionId = () => {
-  const existing = localStorage.getItem(STORAGE_KEY);
+const getStorageKey = (userId) =>
+  `${STORAGE_KEY}_${userId || GUEST_STORAGE_SCOPE}`;
+
+const getOrCreateSessionId = (userId) => {
+  const scopedStorageKey = getStorageKey(userId);
+  const existing = localStorage.getItem(scopedStorageKey);
   if (existing) return existing;
 
   const newId = createSessionId();
-  localStorage.setItem(STORAGE_KEY, newId);
+  localStorage.setItem(scopedStorageKey, newId);
   return newId;
 };
 
@@ -24,7 +31,7 @@ const defaultWelcomeMessage = {
   text: "Hi! I’m the CareerBridge Assistant. I can help with jobs, sign in, sign up, profile editing, feedback, internships, and portal navigation.",
 };
 
-function ChatbotWidget() {
+function ChatbotWidget({ currentUser }) {
   const location = useLocation();
   const bottomRef = useRef(null);
 
@@ -41,14 +48,23 @@ function ChatbotWidget() {
   ]);
 
   useEffect(() => {
-    const id = getOrCreateSessionId();
+    const id = getOrCreateSessionId(currentUser?.id);
     setSessionId(id);
+    setLoadingSession(true);
 
     const loadSession = async () => {
       try {
-        const res = await fetch(`http://localhost:5000/api/chatbot/session/${id}`, {
+        const res = await fetch(buildApiUrl(`/api/chatbot/session/${id}`), {
           credentials: "include",
         });
+
+        if (res.status === 403) {
+          const newSessionId = createSessionId();
+          localStorage.setItem(getStorageKey(currentUser?.id), newSessionId);
+          setSessionId(newSessionId);
+          setMessages([defaultWelcomeMessage]);
+          return;
+        }
 
         const data = await res.json();
 
@@ -65,7 +81,7 @@ function ChatbotWidget() {
     };
 
     loadSession();
-  }, []);
+  }, [currentUser?.id]);
 
   useEffect(() => {
     if (isOpen) {
@@ -78,6 +94,8 @@ function ChatbotWidget() {
     [input, typing]
   );
 
+  const buildApiUrl = (path) => `${API_BASE_URL}${path}`;
+
   const sendMessage = async (textToSend) => {
     const cleanText = textToSend.trim();
     if (!cleanText || !sessionId || typing) return;
@@ -85,7 +103,7 @@ function ChatbotWidget() {
     setTyping(true);
 
     try {
-      const res = await fetch("http://localhost:5000/api/chatbot/message", {
+      const res = await fetch(buildApiUrl("/api/chatbot/message"), {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -138,11 +156,20 @@ function ChatbotWidget() {
     if (!sessionId) return;
 
     try {
-      await fetch(`http://localhost:5000/api/chatbot/session/${sessionId}`, {
-        method: "DELETE",
-        credentials: "include",
-      });
-    } catch {}
+      const response = await fetch(
+        buildApiUrl(`/api/chatbot/session/${sessionId}`),
+        {
+          method: "DELETE",
+          credentials: "include",
+        }
+      );
+
+      if (!response.ok) {
+        console.warn("Failed to clear chat session from server");
+      }
+    } catch (error) {
+      console.warn("Could not clear chat session from server", error);
+    }
 
     setMessages([defaultWelcomeMessage]);
     setSuggestions([

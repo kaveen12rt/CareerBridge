@@ -196,6 +196,13 @@ function FeedbackPage() {
     return currentUser && feedback?.user?._id === currentUser.id;
   };
 
+  const averageRating = feedbackList.length
+    ? (
+        feedbackList.reduce((total, item) => total + Number(item.rating || 0), 0) /
+        feedbackList.length
+      ).toFixed(1)
+    : "0.0";
+
   if (loading) {
     return (
       <div className="min-h-screen bg-slate-50 flex items-center justify-center">
@@ -205,15 +212,45 @@ function FeedbackPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 px-4 py-10">
-      <div className="max-w-7xl mx-auto">
-        <div className="bg-white rounded-3xl shadow-xl p-8 mb-8">
-          <h1 className="text-4xl font-bold text-indigo-600 mb-3">
+    <div className="min-h-screen bg-gradient-to-br from-slate-100 via-blue-50 to-indigo-100 px-4 py-10">
+      <div className="max-w-7xl mx-auto relative">
+        <div className="pointer-events-none absolute -top-20 -right-16 h-72 w-72 rounded-full bg-blue-300/40 blur-3xl" />
+        <div className="pointer-events-none absolute top-56 -left-16 h-80 w-80 rounded-full bg-indigo-300/30 blur-3xl" />
+
+        <div className="relative overflow-hidden bg-white/85 backdrop-blur rounded-3xl shadow-xl p-8 mb-8 border border-white/60">
+          <div className="absolute right-0 top-0 h-40 w-40 bg-gradient-to-bl from-indigo-100/80 to-transparent rounded-bl-full" />
+          <div className="inline-flex items-center gap-2 bg-indigo-50 text-indigo-700 px-4 py-1 rounded-full text-xs font-semibold uppercase tracking-wide relative">
+            Community Voices
+          </div>
+          <h1 className="text-4xl font-bold text-indigo-700 mt-3 mb-3 relative">
             Feedback
           </h1>
-          <p className="text-gray-600 text-lg">
+          <p className="text-slate-600 text-lg max-w-2xl relative">
             All users can view feedback here. You can only edit or delete your own feedback.
           </p>
+
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mt-7 relative">
+            <div className="rounded-2xl border border-indigo-100 bg-indigo-50/70 p-4">
+              <p className="text-xs text-indigo-700 font-semibold uppercase tracking-wide">
+                Total Reviews
+              </p>
+              <p className="text-3xl font-bold text-indigo-900 mt-2">{feedbackList.length}</p>
+            </div>
+            <div className="rounded-2xl border border-amber-100 bg-amber-50/80 p-4">
+              <p className="text-xs text-amber-700 font-semibold uppercase tracking-wide">
+                Average Rating
+              </p>
+              <p className="text-3xl font-bold text-amber-800 mt-2">{averageRating} / 5</p>
+            </div>
+            <div className="rounded-2xl border border-emerald-100 bg-emerald-50/80 p-4 col-span-2 md:col-span-1">
+              <p className="text-xs text-emerald-700 font-semibold uppercase tracking-wide">
+                Your Access
+              </p>
+              <p className="text-sm font-semibold text-emerald-800 mt-2">
+                {currentUser ? "Submit, edit, and delete your own review" : "Sign in to leave a review"}
+              </p>
+            </div>
+          </div>
         </div>
 
         {pageError && (
@@ -230,7 +267,7 @@ function FeedbackPage() {
 
         <div className="grid lg:grid-cols-3 gap-8">
           <div className="lg:col-span-1">
-            <div className="bg-white rounded-2xl shadow-lg p-8 sticky top-6">
+            <div className="bg-white/90 backdrop-blur rounded-2xl shadow-lg p-8 sticky top-6 border border-white/70">
               <h2 className="text-2xl font-bold text-slate-800 mb-6">
                 {editingId ? "Edit Your Feedback" : "Write Feedback"}
               </h2>
@@ -242,29 +279,38 @@ function FeedbackPage() {
                   </p>
                   <Link
                     to="/signin"
-                    className="inline-block bg-indigo-600 text-white px-5 py-3 rounded-xl font-semibold hover:bg-indigo-700 transition"
+                    className="inline-block bg-gradient-to-r from-indigo-600 to-blue-600 text-white px-5 py-3 rounded-xl font-semibold hover:from-indigo-700 hover:to-blue-700 transition shadow-md shadow-indigo-200"
                   >
                     Sign In
                   </Link>
                 </div>
               ) : (
-                <form onSubmit={handleSubmit} className="space-y-4">
+                <form onSubmit={handleSubmit} className="space-y-5">
                   <div>
                     <label className="block text-sm font-semibold text-gray-700 mb-1">
                       Rating
                     </label>
-                    <select
-                      name="rating"
-                      value={formData.rating}
-                      onChange={handleChange}
-                      className="w-full border border-gray-300 rounded-lg px-4 py-3 outline-none focus:ring-2 focus:ring-indigo-500"
-                    >
-                      <option value={5}>5 - Excellent</option>
-                      <option value={4}>4 - Very Good</option>
-                      <option value={3}>3 - Good</option>
-                      <option value={2}>2 - Fair</option>
-                      <option value={1}>1 - Poor</option>
-                    </select>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      {[1, 2, 3, 4, 5].map((star) => (
+                        <button
+                          key={star}
+                          type="button"
+                          onClick={() =>
+                            setFormData((prev) => ({ ...prev, rating: star }))
+                          }
+                          className={`h-11 w-11 rounded-xl border text-xl transition ${
+                            formData.rating >= star
+                              ? "bg-amber-100 border-amber-300 text-amber-500"
+                              : "bg-white border-slate-200 text-slate-300 hover:border-amber-200"
+                          }`}
+                        >
+                          ★
+                        </button>
+                      ))}
+                    </div>
+                    <p className="text-xs text-slate-500 mt-2">
+                      Selected: <span className="font-semibold text-slate-700">{formData.rating} / 5</span>
+                    </p>
                   </div>
 
                   <div>
@@ -277,7 +323,7 @@ function FeedbackPage() {
                       value={formData.message}
                       onChange={handleChange}
                       placeholder="Write your feedback here..."
-                      className="w-full border border-gray-300 rounded-lg px-4 py-3 outline-none focus:ring-2 focus:ring-indigo-500"
+                      className="w-full border border-slate-200 rounded-xl px-4 py-3 outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-200 bg-white/90"
                     />
                   </div>
 
@@ -285,7 +331,7 @@ function FeedbackPage() {
                     <button
                       type="submit"
                       disabled={submitting}
-                      className="flex-1 bg-indigo-600 text-white py-3 rounded-xl font-semibold hover:bg-indigo-700 transition disabled:opacity-60"
+                      className="flex-1 bg-gradient-to-r from-indigo-600 to-blue-600 text-white py-3 rounded-xl font-semibold hover:from-indigo-700 hover:to-blue-700 transition disabled:opacity-60 shadow-lg shadow-indigo-200/60"
                     >
                       {submitting
                         ? "Saving..."
@@ -301,7 +347,7 @@ function FeedbackPage() {
                           setEditingId(null);
                           setFormData({ rating: 5, message: "" });
                         }}
-                        className="px-4 py-3 bg-gray-200 text-gray-700 rounded-xl font-semibold hover:bg-gray-300 transition"
+                        className="px-4 py-3 bg-slate-200 text-slate-700 rounded-xl font-semibold hover:bg-slate-300 transition"
                       >
                         Clear
                       </button>
@@ -314,18 +360,18 @@ function FeedbackPage() {
 
           <div className="lg:col-span-2 space-y-6">
             {feedbackList.length === 0 ? (
-              <div className="bg-white rounded-2xl shadow-lg p-8 text-gray-600">
+              <div className="bg-white/90 backdrop-blur rounded-2xl shadow-lg p-8 text-gray-600 border border-white/70">
                 No feedback available yet.
               </div>
             ) : (
               feedbackList.map((feedback) => (
                 <div
                   key={feedback._id}
-                  className="bg-white rounded-2xl shadow-lg p-8"
+                  className="bg-white/90 backdrop-blur rounded-2xl shadow-lg p-8 border border-white/70 hover:shadow-xl transition"
                 >
                   <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-4">
                     <div>
-                      <h3 className="text-2xl font-bold text-slate-800">
+                      <h3 className="text-2xl font-bold text-slate-800 leading-tight">
                         {feedback.user?.firstName} {feedback.user?.lastName}
                       </h3>
                       <p className="text-gray-500">{feedback.user?.email}</p>
@@ -335,7 +381,7 @@ function FeedbackPage() {
                     </div>
 
                     <div className="flex flex-col items-start md:items-end gap-3">
-                      <span className="bg-yellow-100 text-yellow-700 px-4 py-2 rounded-full text-sm font-semibold">
+                      <span className="bg-yellow-100 text-yellow-700 px-4 py-2 rounded-full text-sm font-semibold shadow-sm">
                         {"★".repeat(feedback.rating)}{"☆".repeat(5 - feedback.rating)}
                       </span>
 
@@ -359,7 +405,9 @@ function FeedbackPage() {
                   </div>
 
                   <div className="bg-slate-50 rounded-xl p-5 border border-slate-100">
-                    <p className="text-gray-700 leading-8">{feedback.message}</p>
+                    <p className="text-gray-700 leading-8 whitespace-pre-wrap break-words">
+                      {feedback.message}
+                    </p>
                   </div>
 
                   <p className="text-xs text-gray-400 mt-4">

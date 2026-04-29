@@ -1,6 +1,19 @@
 import ChatSession from "../models/ChatSession.js";
 import { generateChatbotReply } from "../utils/chatbotEngine.js";
 
+const toComparableId = (value) => (value ? String(value) : null);
+
+const isSessionAccessibleByRequester = (session, user) => {
+  const sessionUserId = toComparableId(session.userId);
+  const requesterUserId = toComparableId(user?.id);
+
+  if (requesterUserId) {
+    return sessionUserId === requesterUserId;
+  }
+
+  return !sessionUserId;
+};
+
 export const getChatSession = async (req, res) => {
   try {
     const { sessionId } = req.params;
@@ -14,6 +27,13 @@ export const getChatSession = async (req, res) => {
           sessionId,
           messages: [],
         },
+      });
+    }
+
+    if (!isSessionAccessibleByRequester(session, req.user)) {
+      return res.status(403).json({
+        success: false,
+        message: "You are not allowed to access this chat session.",
       });
     }
 
@@ -50,13 +70,18 @@ export const sendChatMessage = async (req, res) => {
     if (!session) {
       session = new ChatSession({
         sessionId,
-        userId: req.user?.id || null,
+        userId: toComparableId(req.user?.id),
         messages: [],
+      });
+    } else if (!isSessionAccessibleByRequester(session, req.user)) {
+      return res.status(403).json({
+        success: false,
+        message: "You are not allowed to access this chat session.",
       });
     }
 
     if (req.user?.id) {
-      session.userId = req.user.id;
+      session.userId = toComparableId(req.user.id);
     }
 
     session.messages.push({
@@ -100,7 +125,23 @@ export const clearChatSession = async (req, res) => {
   try {
     const { sessionId } = req.params;
 
-    await ChatSession.findOneAndDelete({ sessionId });
+    const session = await ChatSession.findOne({ sessionId });
+
+    if (!session) {
+      return res.status(200).json({
+        success: true,
+        message: "Chat session already cleared.",
+      });
+    }
+
+    if (!isSessionAccessibleByRequester(session, req.user)) {
+      return res.status(403).json({
+        success: false,
+        message: "You are not allowed to clear this chat session.",
+      });
+    }
+
+    await ChatSession.deleteOne({ _id: session._id });
 
     res.status(200).json({
       success: true,
